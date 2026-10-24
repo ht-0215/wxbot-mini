@@ -1,6 +1,8 @@
-"""微信封装：优先 wxauto，导入失败时给出明确提示。
+"""微信封装：兼容 wxauto / wechatauto-replica 两种后端。
 
-暴露四个动作：取未读会话、读某会话最新消息、发文本、发图片。
+暴露五个动作：取未读会话、切前台、读某会话最新消息、发文本、发图片。
+wechatauto-replica 的导入名是 wechatauto，模块名与属性名略有差异，
+本文件统一成 Message(dataclass) 输出给上层。
 """
 from __future__ import annotations
 
@@ -18,37 +20,36 @@ class Message:
     text: str
 
 
+def _import_backend():
+    try:
+        from wxauto import WeChat as _WeChat  # noqa: PLC0415
+        return _WeChat, "wxauto"
+    except ImportError:
+        pass
+    try:
+        from wechatauto import WeChat as _WeChat  # noqa: PLC0415
+        return _WeChat, "wechatauto"
+    except ImportError as exc:
+        raise RuntimeError(
+            "未安装微信自动化库。pip install -i https://pypi.tuna.tsinghua.edu.cn/simple "
+            "wechatauto-replica（或 wxauto），并保持 PC 微信已登录、最小化到托盘。"
+        ) from exc
+
+
 class WeChat:
     def __init__(self) -> None:
-        try:
-            from wxauto import WeChat as _WeChat  # noqa: PLC0415
-        except ImportError as exc:
-            raise RuntimeError(
-                "未安装 wxauto。pip install wxauto（或 wechatauto-replica），"
-                "并保持 PC 微信已登录、最小化到托盘。"
-            ) from exc
-        self._wx = _WeChat()
-        log.info("已连接微信客户端")
+        cls, self.backend = _import_backend()
+        self._wx = cls()
+        log.info("已连接微信客户端（后端: %s）", self.backend)
 
     def unread_chats(self) -> list[str]:
+        """未读会话名单：GetSession 列表里 unread>0 的行。"""
         try:
-            return [c.name for c in self._wx.GetNextNewMessage(all=True)]
+            sessions = self._wx.GetSession()
+            return [s.name for s in sessions if getattr(s, "unread", 0)]
         except Exception as exc:  # noqa: BLE001
-            log.warning("获取未读会话失败: %s", exc)
+            log.warning("获取会话列表失败: %s", exc)
             return []
-
-    def read_latest(self, chat: str) -> list[Message]:
-        """切到指定会话并读取最新几条文本消息。"""
-        msgs: list[Message] = []
-        try:
-            self._wx.ChatWith(chat)
-            for m in self._wx.GetAllMessage()[-5:]:
-                if getattr(m, "type", "") != "text":
-                    continue
-                msgs.append(Message(chat=chat, sender=str(m.attr), text=str(m.content).strip()))
-        except Exception as exc:  # noqa: BLE001
-            log.warning("读取会话 %s 失败: %s", chat, exc)
-        return [m for m in msgs if m.text]
 
     def focus(self, chat: str) -> None:
         """把会话切到前台，让表情面板快捷键落在它身上。"""
@@ -56,6 +57,35 @@ class WeChat:
             self._wx.ChatWith(chat)
         except Exception as exc:  # noqa: BLE001
             log.warning("切换会话 %s 失败: %s", chat, exc)
+
+    def read_latest(self, chat: str) -> list[Message]:
+        """优先读会话列表 summary（数据库路径，快且稳）；取不到再走 UIA。"""
+        try:
+            for s in self._wx.GetSession():
+                if s.name != chat:
+                    continue
+                summary = str(getattr(s, "summary", "") or "").strip()
+                if summary:
+                    sender, _, rest = summary.partition(":")
+                    # 群列表常是 "昵称:消息"；单人会话无冒号则整体当正文
+                    if rest.strip():
+                        return [Message(chat=chat, sender=sender.strip(), text=rest.strip())]
+                    return [Message(chat=chat, sender="", text=summary)]
+        except Exception as exc:  # noqa: BLE001
+            log.debug("会话列表读取失败，回落 UIA: %s", exc)
+        msgs: list[Message] = []
+        try:
+            self._wx.ChatWith(chat)
+            for m in self._wx.GetAllMessage()[-5:]:
+                if getattr(m, "type", "") != "text":
+                    continue
+                sender = str(getattr(m, "attr", "") or "")
+                text = str(getattr(m, "content", "") or "").strip()
+                if text:
+                    msgs.append(Message(chat=chat, sender=sender, text=text))
+        except Exception as exc:  # noqa: BLE001
+            log.warning("读取会话 %s 失败: %s", chat, exc)
+        return msgs
 
     def send(self, chat: str, text: str) -> None:
         try:
