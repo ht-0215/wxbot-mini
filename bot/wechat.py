@@ -1,11 +1,12 @@
 """微信封装：优先 wxauto，导入失败时给出明确提示。
 
-只暴露三个动作：取未读会话、读某会话最新消息、发一条消息。
+暴露四个动作：取未读会话、读某会话最新消息、发文本、发图片。
 """
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from pathlib import Path
 
 log = logging.getLogger("wxbot.wechat")
 
@@ -55,3 +56,10 @@ class WeChat:
             log.info("→ %s: %s", chat, text[:50])
         except Exception as exc:  # noqa: BLE001
             log.warning("发送到 %s 失败: %s", chat, exc)
+
+    def send_image(self, chat: str, path: Path) -> None:
+        try:
+            self._wx.SendFiles(filepath=str(path), who=chat)
+            log.info("→ %s: [图片 %s]", chat, path.name)
+        except Exception as exc:  # noqa: BLE001
+            log.warning("发图片到 %s 失败: %s", chat, exc)

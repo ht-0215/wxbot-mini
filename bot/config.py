@@ -32,8 +32,24 @@ class DshCfg:
 
 @dataclass
 class RateCfg:
+    poll_seconds: float = 3.0
     merge_window_seconds: float = 4.0
     send_interval: tuple = (1.5, 3.5)
+
+
+@dataclass
+class FeatureCfg:
+    read_links: bool = True
+    time_context: bool = True
+    emotions: bool = True
+
+
+@dataclass
+class MemoryCfg:
+    enabled: bool = True
+    dir: str = "memory"
+    max_history: int = 8
+    summarize_after: int = 24
 
 
 @dataclass
@@ -42,6 +58,8 @@ class Config:
     api: ApiCfg = field(default_factory=ApiCfg)
     dsh: DshCfg = field(default_factory=DshCfg)
     rate: RateCfg = field(default_factory=RateCfg)
+    features: FeatureCfg = field(default_factory=FeatureCfg)
+    memory: MemoryCfg = field(default_factory=MemoryCfg)
     prompts: Dict[str, str] = field(default_factory=dict)
     routes: Dict[str, str] = field(default_factory=dict)
     listen: List[str] = field(default_factory=list)
@@ -57,6 +75,8 @@ def load(path: Path | None = None) -> Config:
     api_d = llm.get("api") or {}
     dsh_d = llm.get("dsh") or {}
     rate_d = raw.get("rate") or {}
+    feat_d = raw.get("features") or {}
+    mem_d = raw.get("memory") or {}
 
     return Config(
         engine=str(llm.get("engine", "api")),
@@ -68,8 +88,20 @@ def load(path: Path | None = None) -> Config:
         ),
         dsh=DshCfg(command=dsh_d.get("command", "dsh"), args=list(dsh_d.get("args") or ["headless"])),
         rate=RateCfg(
+            poll_seconds=float(rate_d.get("poll_seconds", 3.0)),
             merge_window_seconds=float(rate_d.get("merge_window_seconds", 4.0)),
             send_interval=tuple(rate_d.get("send_interval") or (1.5, 3.5)),
+        ),
+        features=FeatureCfg(
+            read_links=bool(feat_d.get("read_links", True)),
+            time_context=bool(feat_d.get("time_context", True)),
+            emotions=bool(feat_d.get("emotions", True)),
+        ),
+        memory=MemoryCfg(
+            enabled=bool(mem_d.get("enabled", True)),
+            dir=str(mem_d.get("dir", "memory")),
+            max_history=int(mem_d.get("max_history", 8)),
+            summarize_after=int(mem_d.get("summarize_after", 24)),
         ),
         prompts=dict(raw.get("prompts") or {}),
         routes=dict(raw.get("routes") or {}),
