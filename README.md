@@ -31,7 +31,7 @@ python run.py
 | 链接读取 | `read_links` | 消息里的 http(s) 链接抓正文摘要拼进提问 |
 | 时间感知 | `time_context` | 每次提问附带"年-月-日 星期 时:分" |
 | 会话记忆 | `memory.*` | 每会话一个 md：最近 N 条进上下文，超过 `summarize_after` 自动摘要压缩 |
-| 情绪表情包 | `emotions` | 回复末尾 `[happy]` 标签 → 从 `emojis/happy/` 随机发一张图 |
+| 情绪表情包 | `emotions` / `emotion_mode` | 回复末尾 `[开心]` 标签：panel 模式 Alt+E 打开微信表情面板→搜索关键词→回车发第一个结果；folder 模式从 `emojis/<标签>/` 随机发本地图片 |
 | 节流合并 | `rate.*` | 轮询间隔 + 发送前随机间隔，降低风控风险 |
 
 `llm.engine` 两档：`api` 直调 wx_40b 网关；`dsh` 走 `dsh headless`，

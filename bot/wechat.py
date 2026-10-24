@@ -50,6 +50,13 @@ class WeChat:
             log.warning("读取会话 %s 失败: %s", chat, exc)
         return [m for m in msgs if m.text]
 
+    def focus(self, chat: str) -> None:
+        """把会话切到前台，让表情面板快捷键落在它身上。"""
+        try:
+            self._wx.ChatWith(chat)
+        except Exception as exc:  # noqa: BLE001
+            log.warning("切换会话 %s 失败: %s", chat, exc)
+
     def send(self, chat: str, text: str) -> None:
         try:
             self._wx.SendMsg(msg=text, who=chat)

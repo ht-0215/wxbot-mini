@@ -42,6 +42,8 @@ class FeatureCfg:
     read_links: bool = True
     time_context: bool = True
     emotions: bool = True
+    # panel: 微信表情面板 Alt+E + 关键词搜索；folder: emojis/<标签>/ 本地图
+    emotion_mode: str = "panel"
 
 
 @dataclass
@@ -96,6 +98,7 @@ def load(path: Path | None = None) -> Config:
             read_links=bool(feat_d.get("read_links", True)),
             time_context=bool(feat_d.get("time_context", True)),
             emotions=bool(feat_d.get("emotions", True)),
+            emotion_mode=str(feat_d.get("emotion_mode", "panel")),
         ),
         memory=MemoryCfg(
             enabled=bool(mem_d.get("enabled", True)),

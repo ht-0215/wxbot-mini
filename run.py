@@ -48,10 +48,15 @@ def handle(cfg, wx, mem, chat: str, text: str, sender: str) -> None:
         time.sleep(random.uniform(lo, hi))
         wx.send(chat, body)
     if emo:
-        img = emotion.pick_image(emo)
-        if img:
-            time.sleep(random.uniform(lo, hi))
-            wx.send_image(chat, img)
+        time.sleep(random.uniform(lo, hi))
+        if cfg.features.emotion_mode == "folder":
+            img = emotion.pick_image(emo)
+            if img:
+                wx.send_image(chat, img)
+        else:
+            # 面板模式：会话此刻在前台，直接 Alt+E → 搜关键词 → 回车
+            wx.focus(chat)
+            emotion.send_from_panel(emo)
 
     mem.append(chat, sender, text)
     if mem.needs_summarize(chat):
