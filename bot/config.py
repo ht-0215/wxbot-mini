@@ -41,9 +41,15 @@ class RateCfg:
 class FeatureCfg:
     read_links: bool = True
     time_context: bool = True
-    emotions: bool = True
-    # panel: 微信表情面板 Alt+E + 关键词搜索；folder: emojis/<标签>/ 本地图
-    emotion_mode: str = "panel"
+    emotions: bool = False        # 表情包：FAE 技术支持场景默认关闭
+    emotion_mode: str = "hybrid"  # hybrid: 只查 stickers/ 本地库秒发；panel: 允许面板补图
+
+
+@dataclass
+class KnowledgeCfg:
+    enabled: bool = True
+    dir: str = "knowledge"
+    top_k: int = 3
 
 
 @dataclass
@@ -62,6 +68,7 @@ class Config:
     rate: RateCfg = field(default_factory=RateCfg)
     features: FeatureCfg = field(default_factory=FeatureCfg)
     memory: MemoryCfg = field(default_factory=MemoryCfg)
+    knowledge: KnowledgeCfg = field(default_factory=KnowledgeCfg)
     prompts: Dict[str, str] = field(default_factory=dict)
     routes: Dict[str, str] = field(default_factory=dict)
     listen: List[str] = field(default_factory=list)
@@ -79,6 +86,7 @@ def load(path: Path | None = None) -> Config:
     rate_d = raw.get("rate") or {}
     feat_d = raw.get("features") or {}
     mem_d = raw.get("memory") or {}
+    kb_d = raw.get("knowledge") or {}
 
     return Config(
         engine=str(llm.get("engine", "api")),
@@ -97,14 +105,19 @@ def load(path: Path | None = None) -> Config:
         features=FeatureCfg(
             read_links=bool(feat_d.get("read_links", True)),
             time_context=bool(feat_d.get("time_context", True)),
-            emotions=bool(feat_d.get("emotions", True)),
-            emotion_mode=str(feat_d.get("emotion_mode", "panel")),
+            emotions=bool(feat_d.get("emotions", False)),
+            emotion_mode=str(feat_d.get("emotion_mode", "hybrid")),
         ),
         memory=MemoryCfg(
             enabled=bool(mem_d.get("enabled", True)),
             dir=str(mem_d.get("dir", "memory")),
             max_history=int(mem_d.get("max_history", 8)),
             summarize_after=int(mem_d.get("summarize_after", 24)),
+        ),
+        knowledge=KnowledgeCfg(
+            enabled=bool(kb_d.get("enabled", True)),
+            dir=str(kb_d.get("dir", "knowledge")),
+            top_k=int(kb_d.get("top_k", 3)),
         ),
         prompts=dict(raw.get("prompts") or {}),
         routes=dict(raw.get("routes") or {}),

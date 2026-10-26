@@ -12,7 +12,7 @@ import random
 import time
 
 from bot import config as cfg_mod
-from bot import emotion, llm, memory as mem_mod, router, webpage
+from bot import emotion, knowledge as kb_mod, llm, memory as mem_mod, router, webpage
 
 log = logging.getLogger("wxbot")
 
@@ -27,15 +27,18 @@ def check(cfg) -> None:
     feats = cfg.features
     print(f"features   : links={feats.read_links} time={feats.time_context} emoji={feats.emotions}")
     print(f"memory     : {'开' if cfg.memory.enabled else '关'} dir={cfg.memory.dir} max={cfg.memory.max_history}")
+    kb = kb_mod.KnowledgeBase(dir=kb_mod.ROOT / cfg.knowledge.dir, top_k=cfg.knowledge.top_k)
+    kb.reload(force=True)
+    print(f"knowledge  : {'开' if cfg.knowledge.enabled else '关'} dir={cfg.knowledge.dir} chunks={len(kb._chunks)}")
     if cfg.engine == "api":
         reply = llm.ask(cfg, llm.SYSTEM_HINT, "回复“ok”两个字母即可")
         print(f"模型连通性 : {reply[:60]}")
 
 
-def handle(cfg, wx, mem, chat: str, text: str, sender: str) -> None:
-    """一条完整链路：链接增强 → 记忆/时间上下文 → LLM → 拆情绪 → 节流发送。"""
+def handle(cfg, wx, mem, chat: str, text: str, sender: str, kb=None) -> None:
+    """一条完整链路：链接增强 → 记忆/时间/知识库上下文 → LLM → 节流发送。"""
     enriched = webpage.enrich(cfg, text)
-    question = llm.build_question(cfg, mem, chat, sender, enriched)
+    question = llm.build_question(cfg, mem, chat, sender, enriched, kb=kb)
     system = router.system_prompt_for(cfg, chat)
     reply = llm.ask(cfg, system, question)
 
@@ -73,6 +76,8 @@ def run(cfg) -> None:
 
     wx = WeChat()
     mem = mem_mod.SessionMemory(cfg)
+    kb = kb_mod.KnowledgeBase(dir=kb_mod.ROOT / cfg.knowledge.dir, top_k=cfg.knowledge.top_k) \
+        if cfg.knowledge.enabled else None
     last_seen: dict[str, str] = {}
     log.info("进入轮询循环，Ctrl+C 退出")
     while True:
@@ -86,7 +91,7 @@ def run(cfg) -> None:
             if text == last_seen.get(chat):
                 continue  # 已回过，去重
             last_seen[chat] = text
-            handle(cfg, wx, mem, chat, text, msgs[-1].sender)
+            handle(cfg, wx, mem, chat, text, msgs[-1].sender, kb=kb)
         time.sleep(cfg.rate.poll_seconds)
 
 

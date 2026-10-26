@@ -1,6 +1,6 @@
 """大模型调用：api 档直调 OpenAI 兼容接口；dsh 档走 dsh headless 子进程。
 
-提问文本按开关拼装：时间上下文 + 会话记忆上下文 + 链接摘要 + 原文。
+提问文本按开关拼装：时间上下文 + 会话记忆 + 知识库检索段 + 链接摘要 + 原文。
 """
 from __future__ import annotations
 
@@ -11,19 +11,22 @@ import urllib.request
 from datetime import datetime
 
 from .config import Config
+from .knowledge import KnowledgeBase
 from .memory import SessionMemory
 
 log = logging.getLogger("wxbot.llm")
 
 SYSTEM_HINT = (
-    "你在替一个真人回复微信消息。直接给出可发送的回复文本本身，"
-    "不要解释、不要加引号或前后缀。"
+    "你是 FAE（现场应用工程师）技术支持助手。基于给定知识库内容回答工程师/客户咨询，"
+    "简洁直接、给可执行结论（型号/寄存器/参数/命令），知识库未覆盖的如实说明。"
+    "直接输出回复文本本身，不要解释、不要加引号或前后缀。"
 )
 
 WEEKDAYS = "一二三四五六日"
 
 
-def build_question(cfg: Config, mem: SessionMemory, chat: str, sender: str, text: str) -> str:
+def build_question(cfg: Config, mem: SessionMemory, chat: str, sender: str, text: str,
+                   kb: KnowledgeBase | None = None) -> str:
     parts: list[str] = []
     if cfg.features.time_context:
         now = datetime.now()
@@ -31,6 +34,10 @@ def build_question(cfg: Config, mem: SessionMemory, chat: str, sender: str, text
     ctx = mem.context_block(chat)
     if ctx:
         parts.append(ctx)
+    if kb is not None:
+        kb_block = kb.context_block(text)
+        if kb_block:
+            parts.append(kb_block)
     who = f"{sender}: " if sender else ""
     parts.append(f"{who}{text}")
     return "\n".join(parts)
