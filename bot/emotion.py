@@ -54,12 +54,19 @@ def split_reply(text: str) -> tuple[str, str | None]:
 
 
 def pick_image(emotion: str) -> Path | None:
-    """folder 模式：emojis/<情绪>/ 下随机取一张图。"""
-    d = ROOT / "emojis" / emotion
-    if not d.is_dir():
-        return None
-    images = [p for p in d.iterdir() if p.suffix.lower() in IMG_EXTS]
-    return random.choice(images) if images else None
+    """从独立表情库 stickers/ 取该关键词的表情包图。"""
+    lib = ROOT / "stickers"
+    p = lib / f"{emotion}.png"
+    if p.exists():
+        return p
+    # 兼容旧布局：stickers/<关键词>/first.png 或 emojis/<关键词>/*.png
+    for cand in (lib / emotion / "first.png", ROOT / "emojis" / emotion):
+        d = cand if cand.is_dir() else cand.parent
+        if d.is_dir():
+            images = [q for q in d.iterdir() if q.suffix.lower() in IMG_EXTS]
+            if images:
+                return random.choice(images)
+    return None
 
 
 # ── panel 模式：键盘 + 坐标点击 ─────────────────────────
@@ -179,19 +186,19 @@ def send_from_panel(keyword: str, search_wait: float = 2.0) -> bool:
 
 
 def _cache_first_result(rect, keyword: str = "") -> None:
-    """截取面板搜索结果第一格，存为 emojis/<关键词>/first.png。"""
+    """截取搜索结果第一个图标（单格居中），存 stickers/<关键词>.png。"""
     try:
         from PIL import ImageGrab  # noqa: PLC0415
         w = rect.right - rect.left
         h = rect.bottom - rect.top
-        cell = (
-            int(rect.left + w * 0.05), int(rect.top + h * 0.15),
-            int(rect.left + w * 0.22), int(rect.top + h * 0.34),
-        )
-        img = ImageGrab.grab(bbox=cell)
-        out_dir = ROOT / "emojis" / (keyword or "misc")
-        out_dir.mkdir(parents=True, exist_ok=True)
-        img.save(out_dir / "first.png")
-        log.info("表情已缓存: %s", out_dir / "first.png")
+        cx = int(rect.left + w * FIRST_RESULT_RATIO[0])
+        cy = int(rect.top + h * FIRST_RESULT_RATIO[1])
+        half = max(int(w * 0.045), 46)          # 单格半径，只罩住一个图标
+        img = ImageGrab.grab(bbox=(cx - half, cy - half, cx + half, cy + half))
+        lib = ROOT / "stickers"
+        lib.mkdir(parents=True, exist_ok=True)
+        out = lib / f"{(keyword or 'misc')}.png"
+        img.save(out)
+        log.info("表情已入库: %s (%dx%d)", out, *img.size)
     except Exception as exc:  # noqa: BLE001
         log.debug("缓存表情截图失败: %s", exc)

@@ -1,0 +1,41 @@
+2026-10-26 18:31:26 [wechatauto] [DEBUG] [guia.py:290]  WinInput 初始化，屏幕尺寸：2520x1680
+2026-10-26 18:31:26 [wechatauto] [INFO] [guia.py:879]  已加载布局校准（wide）：sidebar_ratio=0.280
+2026-10-26 18:31:26 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=1050798, render=12650642, rect=(-31987, -32000, -29811, -30648)
+2026-10-26 18:31:28 [wxbot.wechat] [INFO] [wechat.py:43]  已连接微信客户端（后端: wechatauto）
+2026-10-26 18:31:29 [wechatauto] [INFO] [accessibility.py:571]  热激活 UIA：PID=46300 Weixin.dll+0xb135c38: 0 -> 1
+2026-10-26 18:31:29 [wechatauto] [INFO] [accessibility.py:579]  UIA 树已物化，已记录 gate RVA：Weixin.dll+0xb135c38
+2026-10-26 18:31:30 [wechatauto] [INFO] [guia.py:1458]  已启用 UIA 驱动（混合路径：UIA 优先，OCR 兜底）
+2026-10-26 18:31:30 [wechatauto] [DEBUG] [uia_driver.py:1012]  聊天页那一片已经渲染，不点导航栏
+2026-10-26 18:31:45 [wxbot.wechat] [INFO] [wechat.py:93]  → 文件传输助手: 周五啦，加油干！
+2026-10-26 18:31:45 [wechatauto] [INFO] [guia.py:1071]  自动最小化遮挡窗口 2 个（累计待还原 2 个）
+2026-10-26 18:31:51 [wechatauto] [DEBUG] [guia.py:2253]  粘贴前输入框探测：(608, 991, 2176, 1202)
+2026-10-26 18:31:54 [wechatauto] [DEBUG] [guia.py:2265]  粘贴尝试 1 草稿检测：True
+2026-10-26 18:31:56 [wxbot.wechat] [INFO] [wechat.py:100]  → 文件传输助手: [图片 first.png]
+2026-10-26 18:32:00 [wechatauto] [DEBUG] [guia.py:290]  WinInput 初始化，屏幕尺寸：2520x1680
+2026-10-26 18:32:00 [wechatauto] [INFO] [guia.py:879]  已加载布局校准（wide）：sidebar_ratio=0.280
+2026-10-26 18:32:00 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=1050798, render=12650642, rect=(138, 269, 2314, 1621)
+2026-10-26 18:32:01 [wxbot.wechat] [INFO] [wechat.py:43]  已连接微信客户端（后端: wechatauto）
+2026-10-26 18:32:06 [wechatauto] [DEBUG] [guia.py:290]  WinInput 初始化，屏幕尺寸：2520x1680
+2026-10-26 18:32:06 [wechatauto] [INFO] [guia.py:879]  已加载布局校准（wide）：sidebar_ratio=0.280
+2026-10-26 18:32:06 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=1050798, render=12650642, rect=(138, 269, 2314, 1621)
+2026-10-26 18:32:07 [wxbot.wechat] [INFO] [wechat.py:43]  已连接微信客户端（后端: wechatauto）
+2026-10-26 18:32:08 [wechatauto] [INFO] [guia.py:1458]  已启用 UIA 驱动（混合路径：UIA 优先，OCR 兜底）
+2026-10-26 18:32:08 [wechatauto] [DEBUG] [uia_driver.py:1012]  聊天页那一片已经渲染，不点导航栏
+2026-10-26 18:32:20 [wechatauto] [DEBUG] [guia.py:290]  WinInput 初始化，屏幕尺寸：2520x1680
+2026-10-26 18:32:20 [wechatauto] [INFO] [guia.py:879]  已加载布局校准（wide）：sidebar_ratio=0.280
+2026-10-26 18:32:20 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=1050798, render=12650642, rect=(138, 269, 2314, 1621)
+2026-10-26 18:32:21 [wxbot.wechat] [INFO] [wechat.py:43]  已连接微信客户端（后端: wechatauto）
+2026-10-26 18:32:22 [wechatauto] [INFO] [guia.py:1458]  已启用 UIA 驱动（混合路径：UIA 优先，OCR 兜底）
+2026-10-26 18:32:22 [wechatauto] [DEBUG] [uia_driver.py:1012]  聊天页那一片已经渲染，不点导航栏
+2026-10-26 18:35:31 [wechatauto] [DEBUG] [guia.py:290]  WinInput 初始化，屏幕尺寸：2520x1680
+2026-10-26 18:35:31 [wechatauto] [INFO] [guia.py:879]  已加载布局校准（wide）：sidebar_ratio=0.280
+2026-10-26 18:35:31 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=1050798, render=12650642, rect=(104, 138, 2280, 1608)
+2026-10-26 18:35:32 [wxbot.wechat] [INFO] [wechat.py:43]  已连接微信客户端（后端: wechatauto）
+2026-10-26 18:35:34 [wechatauto] [INFO] [guia.py:1458]  已启用 UIA 驱动（混合路径：UIA 优先，OCR 兜底）
+2026-10-26 18:35:35 [wechatauto] [DEBUG] [uia_driver.py:1012]  聊天页那一片已经渲染，不点导航栏
+2026-10-26 18:35:41 [wxbot.wechat] [INFO] [wechat.py:93]  → 文件传输助手: 周五就收个尾，把 u-boot 镜像验证一下，晚上早点休息。
+2026-10-26 18:35:42 [wechatauto] [DEBUG] [uia_driver.py:1012]  聊天页那一片已经渲染，不点导航栏
+2026-10-26 18:35:52 [PIL.Image] [DEBUG] [Image.py:421]  Importing PngImagePlugin
+2026-10-26 18:35:52 [wxbot.emoji] [INFO] [emotion.py:202]  表情已入库: D:\GitHub\wxbot-mini\stickers\加油.png (92x92)
+2026-10-26 18:35:53 [wxbot.emoji] [INFO] [emotion.py:181]  表情面板: 加油（发送成功）
+2026-10-26 18:35:53 [wxbot.memory] [DEBUG] [memory.py:78]  记忆已写入 文件传输助手（最近 2 条）

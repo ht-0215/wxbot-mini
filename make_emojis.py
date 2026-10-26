@@ -25,6 +25,7 @@ ICONS = [
     (797, 192, "狗头"),      # 小狗
     # 第二行：所有表情首行
     (105, 348, "微笑"),
+    (364, 434, "开心"),      # 第二行第四列：咧嘴大笑
     (277, 348, "喜欢"),      # 心心眼
     (364, 348, "惊"),        # 惊讶
     (450, 348, "酷"),        # 墨镜
@@ -36,12 +37,13 @@ ICONS = [
 
 def main() -> None:
     img = Image.open(SRC).convert("RGBA")
+    lib = ROOT / "stickers"
+    lib.mkdir(parents=True, exist_ok=True)
     for x, y, kw in ICONS:
         box = (x - CELL, y - CELL, x + CELL, y + CELL)
-        out_dir = ROOT / "emojis" / kw
-        out_dir.mkdir(parents=True, exist_ok=True)
-        img.crop(box).save(out_dir / "first.png")
-        print(f"emojis/{kw}/first.png  <- {box}")
+        out = lib / f"{kw}.png"
+        img.crop(box).save(out)
+        print(f"stickers/{kw}.png  <- {box}")
     print(f"done: {len(ICONS)} stickers")
 
 
