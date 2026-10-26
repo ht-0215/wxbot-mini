@@ -54,3 +54,78 @@
 2026-10-24 16:13:07 [wechatauto] [DEBUG] [uia_driver.py:1012]  聊天页那一片已经渲染，不点导航栏
 2026-10-24 16:13:16 [wxbot.emoji] [INFO] [emotion.py:89]  表情面板: 加油
 2026-10-24 16:13:16 [wxbot.memory] [DEBUG] [memory.py:78]  记忆已写入 文件传输助手（最近 1 条）
+2026-10-24 16:14:59 [wechatauto] [DEBUG] [guia.py:290]  WinInput 初始化，屏幕尺寸：2520x1680
+2026-10-24 16:14:59 [wechatauto] [INFO] [guia.py:879]  已加载布局校准（wide）：sidebar_ratio=0.280
+2026-10-24 16:14:59 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=67482, render=67484, rect=(126, 129, 2322, 1391)
+2026-10-24 16:15:01 [wxbot.wechat] [INFO] [wechat.py:43]  已连接微信客户端（后端: wechatauto）
+2026-10-24 16:15:03 [wechatauto] [INFO] [guia.py:1458]  已启用 UIA 驱动（混合路径：UIA 优先，OCR 兜底）
+2026-10-24 16:15:04 [wechatauto] [DEBUG] [uia_driver.py:1012]  聊天页那一片已经渲染，不点导航栏
+2026-10-24 16:15:15 [wxbot.emoji] [INFO] [emotion.py:89]  表情面板: 开心
+2026-10-24 16:17:06 [wechatauto] [DEBUG] [guia.py:290]  WinInput 初始化，屏幕尺寸：2520x1680
+2026-10-24 16:17:06 [wechatauto] [INFO] [guia.py:879]  已加载布局校准（wide）：sidebar_ratio=0.280
+2026-10-24 16:17:06 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=67482, render=67484, rect=(-31987, -32000, -29791, -30738)
+2026-10-24 16:17:09 [wxbot.wechat] [INFO] [wechat.py:43]  已连接微信客户端（后端: wechatauto）
+2026-10-24 16:17:10 [wechatauto] [INFO] [guia.py:1458]  已启用 UIA 驱动（混合路径：UIA 优先，OCR 兜底）
+2026-10-24 16:17:10 [wechatauto] [DEBUG] [uia_driver.py:1012]  聊天页那一片已经渲染，不点导航栏
+2026-10-24 16:19:49 [wechatauto] [DEBUG] [guia.py:290]  WinInput 初始化，屏幕尺寸：2520x1680
+2026-10-24 16:19:49 [wechatauto] [INFO] [guia.py:879]  已加载布局校准（wide）：sidebar_ratio=0.280
+2026-10-24 16:19:49 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=67482, render=67484, rect=(-31987, -32000, -29791, -30738)
+2026-10-24 16:19:52 [wxbot.wechat] [INFO] [wechat.py:43]  已连接微信客户端（后端: wechatauto）
+2026-10-24 16:19:52 [wechatauto] [INFO] [guia.py:1458]  已启用 UIA 驱动（混合路径：UIA 优先，OCR 兜底）
+2026-10-24 16:19:52 [wechatauto] [DEBUG] [uia_driver.py:1012]  聊天页那一片已经渲染，不点导航栏
+2026-10-24 16:20:05 [wxbot.emoji] [WARNING] [emotion.py:105]  表情面板未能打开（输入框可能没有焦点）
+2026-10-24 16:21:15 [wechatauto] [DEBUG] [guia.py:290]  WinInput 初始化，屏幕尺寸：2520x1680
+2026-10-24 16:21:15 [wechatauto] [INFO] [guia.py:879]  已加载布局校准（wide）：sidebar_ratio=0.280
+2026-10-24 16:21:15 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=67482, render=67484, rect=(126, 129, 2322, 1391)
+2026-10-24 16:21:18 [wxbot.wechat] [INFO] [wechat.py:43]  已连接微信客户端（后端: wechatauto）
+2026-10-24 16:21:19 [wechatauto] [INFO] [guia.py:1458]  已启用 UIA 驱动（混合路径：UIA 优先，OCR 兜底）
+2026-10-24 16:21:19 [wechatauto] [DEBUG] [uia_driver.py:1012]  聊天页那一片已经渲染，不点导航栏
+2026-10-24 16:21:38 [wechatauto] [DEBUG] [guia.py:290]  WinInput 初始化，屏幕尺寸：2520x1680
+2026-10-24 16:21:38 [wechatauto] [INFO] [guia.py:879]  已加载布局校准（wide）：sidebar_ratio=0.280
+2026-10-24 16:21:38 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=67482, render=67484, rect=(126, 129, 2322, 1391)
+2026-10-24 16:21:41 [wxbot.wechat] [INFO] [wechat.py:43]  已连接微信客户端（后端: wechatauto）
+2026-10-24 16:21:41 [wechatauto] [INFO] [guia.py:1458]  已启用 UIA 驱动（混合路径：UIA 优先，OCR 兜底）
+2026-10-24 16:21:42 [wechatauto] [DEBUG] [uia_driver.py:1012]  聊天页那一片已经渲染，不点导航栏
+2026-10-24 16:21:57 [wechatauto] [DEBUG] [guia.py:290]  WinInput 初始化，屏幕尺寸：2520x1680
+2026-10-24 16:21:57 [wechatauto] [INFO] [guia.py:879]  已加载布局校准（wide）：sidebar_ratio=0.280
+2026-10-24 16:21:57 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=67482, render=67484, rect=(126, 129, 2322, 1391)
+2026-10-24 16:22:00 [wxbot.wechat] [INFO] [wechat.py:43]  已连接微信客户端（后端: wechatauto）
+2026-10-24 16:22:00 [wechatauto] [INFO] [guia.py:1458]  已启用 UIA 驱动（混合路径：UIA 优先，OCR 兜底）
+2026-10-24 16:22:01 [wechatauto] [DEBUG] [uia_driver.py:1012]  聊天页那一片已经渲染，不点导航栏
+2026-10-24 16:22:17 [wxbot.emoji] [INFO] [emotion.py:144]  表情面板: 开心（面板未关，未确认）
+2026-10-24 16:24:27 [wechatauto] [DEBUG] [guia.py:290]  WinInput 初始化，屏幕尺寸：2520x1680
+2026-10-24 16:24:27 [wechatauto] [INFO] [guia.py:879]  已加载布局校准（wide）：sidebar_ratio=0.280
+2026-10-24 16:24:27 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=67482, render=67484, rect=(126, 129, 2322, 1391)
+2026-10-24 16:24:29 [wxbot.wechat] [INFO] [wechat.py:43]  已连接微信客户端（后端: wechatauto）
+2026-10-24 16:24:30 [wechatauto] [INFO] [guia.py:1458]  已启用 UIA 驱动（混合路径：UIA 优先，OCR 兜底）
+2026-10-24 16:24:30 [wechatauto] [DEBUG] [uia_driver.py:1012]  聊天页那一片已经渲染，不点导航栏
+2026-10-24 16:24:40 [PIL.Image] [DEBUG] [Image.py:421]  Importing PngImagePlugin
+2026-10-24 16:29:54 [wechatauto] [DEBUG] [guia.py:290]  WinInput 初始化，屏幕尺寸：2520x1680
+2026-10-24 16:29:54 [wechatauto] [INFO] [guia.py:879]  已加载布局校准（wide）：sidebar_ratio=0.280
+2026-10-24 16:29:54 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=67482, render=67484, rect=(126, 129, 2322, 1391)
+2026-10-24 16:29:57 [wxbot.wechat] [INFO] [wechat.py:43]  已连接微信客户端（后端: wechatauto）
+2026-10-24 16:29:58 [wechatauto] [INFO] [guia.py:1458]  已启用 UIA 驱动（混合路径：UIA 优先，OCR 兜底）
+2026-10-24 16:29:58 [wechatauto] [DEBUG] [uia_driver.py:1012]  聊天页那一片已经渲染，不点导航栏
+2026-10-24 16:30:08 [PIL.Image] [DEBUG] [Image.py:421]  Importing PngImagePlugin
+2026-10-24 16:30:18 [wechatauto] [DEBUG] [guia.py:290]  WinInput 初始化，屏幕尺寸：2520x1680
+2026-10-24 16:30:18 [wechatauto] [INFO] [guia.py:879]  已加载布局校准（wide）：sidebar_ratio=0.280
+2026-10-24 16:30:18 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=67482, render=67484, rect=(126, 129, 2322, 1391)
+2026-10-24 16:30:20 [wxbot.wechat] [INFO] [wechat.py:43]  已连接微信客户端（后端: wechatauto）
+2026-10-24 16:30:20 [wechatauto] [INFO] [guia.py:1458]  已启用 UIA 驱动（混合路径：UIA 优先，OCR 兜底）
+2026-10-24 16:30:21 [wechatauto] [DEBUG] [uia_driver.py:1012]  聊天页那一片已经渲染，不点导航栏
+2026-10-24 16:30:35 [PIL.Image] [DEBUG] [Image.py:421]  Importing PngImagePlugin
+2026-10-24 16:30:35 [wxbot.emoji] [INFO] [emotion.py:195]  表情已缓存: D:\GitHub\wxbot-mini\emojis\开心\first.png
+2026-10-24 16:30:38 [wxbot.emoji] [INFO] [emotion.py:174]  表情面板: 开心（面板未关，未确认）
+2026-10-24 16:31:06 [wechatauto] [DEBUG] [guia.py:290]  WinInput 初始化，屏幕尺寸：2520x1680
+2026-10-24 16:31:06 [wechatauto] [INFO] [guia.py:879]  已加载布局校准（wide）：sidebar_ratio=0.280
+2026-10-24 16:31:06 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=67482, render=67484, rect=(126, 129, 2322, 1391)
+2026-10-24 16:31:08 [wxbot.wechat] [INFO] [wechat.py:43]  已连接微信客户端（后端: wechatauto）
+2026-10-24 16:31:08 [wechatauto] [INFO] [guia.py:1458]  已启用 UIA 驱动（混合路径：UIA 优先，OCR 兜底）
+2026-10-24 16:31:09 [wechatauto] [DEBUG] [uia_driver.py:1012]  聊天页那一片已经渲染，不点导航栏
+2026-10-24 16:31:38 [wechatauto] [INFO] [guia.py:1071]  自动最小化遮挡窗口 3 个（累计待还原 3 个）
+2026-10-24 16:31:48 [wechatauto] [DEBUG] [guia.py:290]  WinInput 初始化，屏幕尺寸：2520x1680
+2026-10-24 16:31:48 [wechatauto] [INFO] [guia.py:879]  已加载布局校准（wide）：sidebar_ratio=0.280
+2026-10-24 16:31:48 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=67482, render=67484, rect=(-31987, -32000, -29791, -30738)
+2026-10-24 16:31:50 [wxbot.wechat] [INFO] [wechat.py:43]  已连接微信客户端（后端: wechatauto）
+2026-10-24 16:31:51 [wechatauto] [INFO] [guia.py:1458]  已启用 UIA 驱动（混合路径：UIA 优先，OCR 兜底）
+2026-10-24 16:31:51 [wechatauto] [DEBUG] [uia_driver.py:1012]  聊天页那一片已经渲染，不点导航栏

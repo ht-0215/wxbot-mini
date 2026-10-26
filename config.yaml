@@ -35,9 +35,10 @@ features:
   time_context: true
   # 回复末尾允许模型打情绪标签 [happy]/[加油]，自动配一个表情
   emotions: true
-  # panel  : Alt+E 打开微信表情面板，按关键词搜索后发第一个结果（默认）
-  # folder : 从 emojis/<标签>/ 目录随机挑一张本地图片发送
-  emotion_mode: panel
+  # 表情策略（混合）：
+  #   hybrid     : 本地 emojis/<关键词>/ 有图→直接发（快）；没有→走面板搜索一次并自动缓存
+  #   panel_only : 每次都走面板搜索，不吃缓存
+  emotion_mode: hybrid
 
 # ── 会话记忆 ────────────────────────────────────────────
 memory:

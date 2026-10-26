@@ -49,12 +49,11 @@ def handle(cfg, wx, mem, chat: str, text: str, sender: str) -> None:
         wx.send(chat, body)
     if emo:
         time.sleep(random.uniform(lo, hi))
-        if cfg.features.emotion_mode == "folder":
-            img = emotion.pick_image(emo)
-            if img:
-                wx.send_image(chat, img)
+        # 缓存优先：本地已有该关键词的表情图就直接发（快），否则走面板搜索（首次）
+        img = emotion.pick_image(emo)
+        if img is not None and cfg.features.emotion_mode != "panel_only":
+            wx.send_image(chat, img)
         else:
-            # 面板模式：会话此刻在前台，直接 Alt+E → 搜关键词 → 回车
             wx.focus(chat)
             emotion.send_from_panel(emo)
 
