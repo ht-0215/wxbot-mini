@@ -49,13 +49,14 @@ def handle(cfg, wx, mem, chat: str, text: str, sender: str) -> None:
         wx.send(chat, body)
     if emo:
         time.sleep(random.uniform(lo, hi))
-        # 缓存优先：本地已有该关键词的表情图就直接发（快），否则走面板搜索（首次）
         img = emotion.pick_image(emo)
-        if img is not None and cfg.features.emotion_mode != "panel_only":
-            wx.send_image(chat, img)
-        else:
-            wx.focus(chat)
+        if img is not None:
+            wx.send_image(chat, img)          # 库命中：直接发文件，几乎不占前台
+        elif cfg.features.emotion_mode == "panel":
+            wx.focus(chat)                    # 显式 panel 模式才在回复里走面板
             emotion.send_from_panel(emo)
+        else:
+            log.info("表情[%s]不在库中，本轮只发文本（离峰跑 python run.py --warm %s 建库）", emo, emo)
 
     mem.append(chat, sender, text)
     if mem.needs_summarize(chat):
@@ -89,15 +90,35 @@ def run(cfg) -> None:
         time.sleep(cfg.rate.poll_seconds)
 
 
+def warm(cfg, keywords: list[str]) -> None:
+    """离峰建库：逐个关键词走面板搜索，把结果存进 stickers/。"""
+    from bot.wechat import WeChat
+
+    wx = WeChat()
+    wx.focus("文件传输助手")
+    for kw in keywords:
+        if emotion.pick_image(kw):
+            print(f"skip {kw}（已在库）")
+            continue
+        ok = emotion.send_from_panel(kw)
+        print(f"{'ok ' if ok else 'fail'} {kw}")
+        time.sleep(1.0)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="wxbot-mini")
     parser.add_argument("--check", action="store_true", help="只做配置与连通性自检")
+    parser.add_argument("--warm", nargs="*", metavar="关键词", help="离峰批量建表情库，如 --warm 加油 晚安")
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
     cfg = cfg_mod.load()
     if args.check:
         check(cfg)
+        return
+    if args.warm is not None:
+        kws = args.warm or ["开心", "收到", "加油"]
+        warm(cfg, kws)
         return
     try:
         run(cfg)

@@ -35,9 +35,10 @@ features:
   time_context: true
   # 回复末尾允许模型打情绪标签 [happy]/[加油]，自动配一个表情
   emotions: true
-  # 表情策略（混合）：
-  #   hybrid     : 本地 emojis/<关键词>/ 有图→直接发（快）；没有→走面板搜索一次并自动缓存
-  #   panel_only : 每次都走面板搜索，不吃缓存
+  # 表情策略：
+  #   hybrid : 只查本地 stickers/ 库，命中秒发；未命中本轮只发文本。
+  #            冷词离峰跑 `python run.py --warm 关键词...` 建库（默认）
+  #   panel  : 未命中时在回复链路里走面板搜索（会短暂占用前台）
   emotion_mode: hybrid
 
 # ── 会话记忆 ────────────────────────────────────────────
