@@ -64,7 +64,10 @@ def _subtokens(token: str) -> set[str]:
 
 def _cjk_runs(text: str) -> list[str]:
     """提取连续中文串，如 'rgmii link 起不来' → ['起不来']，用于短语加分。"""
-    return re.findall(r"[\u4e00-\u9fff]{2,}", text)
+    runs = re.findall(r"[一-鿿]{2,}", text)
+    # 带连字符/下划线的英文复合词同样有指向性：SPI-NOR、u-boot、phy_nocxn
+    runs += [r for r in re.findall(r"[A-Za-z][A-Za-z0-9]*[-_][A-Za-z0-9][\w-]*", text) if len(r) >= 4]
+    return runs
 
 
 def _tokens_of(text: str, *, limit: int = 0) -> set[str]:
@@ -209,9 +212,9 @@ class KnowledgeBase:
                 score += wt[t] * (idf * tf * (_K1 + 1) / denom if denom else 0.0)
                 if t in title_low:
                     score += wt[t] * idf * 2.0
-                # 文件名命中：gs8611.c、phy.h 这类指向性极强
+                # 文件名命中：gs8611.c 这类指向性强；短词(spi)只轻加权，防霸屏
                 if t in stem_low:
-                    score += wt[t] * idf * 3.0
+                    score += wt[t] * idf * (3.0 if len(t) >= 5 else 1.2)
             # 短语整体命中加分：越长越具体，>=4 字串在正文命中也给足权重
             for r in q_runs:
                 w = min(len(r) * 0.8, 4.0)
