@@ -48,7 +48,8 @@ class FeatureCfg:
 @dataclass
 class KnowledgeCfg:
     enabled: bool = True
-    dir: str = "knowledge"
+    dir: str = "knowledge"          # 单根目录（相对项目根）
+    extra_dirs: List[str] = field(default_factory=list)  # 额外根目录，支持 WSL UNC 路径
     top_k: int = 3
 
 
@@ -117,6 +118,7 @@ def load(path: Path | None = None) -> Config:
         knowledge=KnowledgeCfg(
             enabled=bool(kb_d.get("enabled", True)),
             dir=str(kb_d.get("dir", "knowledge")),
+            extra_dirs=[str(x) for x in (kb_d.get("extra_dirs") or [])],
             top_k=int(kb_d.get("top_k", 3)),
         ),
         prompts=dict(raw.get("prompts") or {}),

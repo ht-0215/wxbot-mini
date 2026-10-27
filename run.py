@@ -10,11 +10,17 @@ import argparse
 import logging
 import random
 import time
+from pathlib import Path
 
 from bot import config as cfg_mod
 from bot import emotion, knowledge as kb_mod, llm, memory as mem_mod, router, webpage
 
 log = logging.getLogger("wxbot")
+
+
+def make_kb(cfg) -> kb_mod.KnowledgeBase:
+    dirs = [kb_mod.ROOT / cfg.knowledge.dir] + [Path(x) for x in cfg.knowledge.extra_dirs]
+    return kb_mod.KnowledgeBase(dirs=dirs, top_k=cfg.knowledge.top_k)
 
 
 def check(cfg) -> None:
@@ -27,9 +33,11 @@ def check(cfg) -> None:
     feats = cfg.features
     print(f"features   : links={feats.read_links} time={feats.time_context} emoji={feats.emotions}")
     print(f"memory     : {'开' if cfg.memory.enabled else '关'} dir={cfg.memory.dir} max={cfg.memory.max_history}")
-    kb = kb_mod.KnowledgeBase(dir=kb_mod.ROOT / cfg.knowledge.dir, top_k=cfg.knowledge.top_k)
+    kb = make_kb(cfg)
     kb.reload(force=True)
-    print(f"knowledge  : {'开' if cfg.knowledge.enabled else '关'} dir={cfg.knowledge.dir} chunks={len(kb._chunks)}")
+    print(f"knowledge  : {'开' if cfg.knowledge.enabled else '关'} roots={len(kb.dirs)} chunks={len(kb._chunks)}")
+    for d in kb.dirs:
+        print(f"  - {d}  ({'目录存在' if d.is_dir() else '不可达'})")
     if cfg.engine == "api":
         reply = llm.ask(cfg, llm.SYSTEM_HINT, "回复“ok”两个字母即可")
         print(f"模型连通性 : {reply[:60]}")
@@ -76,8 +84,7 @@ def run(cfg) -> None:
 
     wx = WeChat()
     mem = mem_mod.SessionMemory(cfg)
-    kb = kb_mod.KnowledgeBase(dir=kb_mod.ROOT / cfg.knowledge.dir, top_k=cfg.knowledge.top_k) \
-        if cfg.knowledge.enabled else None
+    kb = make_kb(cfg) if cfg.knowledge.enabled else None
     last_seen: dict[str, str] = {}
     log.info("进入轮询循环，Ctrl+C 退出")
     while True:

@@ -38,11 +38,13 @@ features:
   emotion_mode: hybrid
 
 # ── 知识库（FAE 技术支持核心）────────────────────────────
-# 往 knowledge/ 放 md/txt，按标题切段，提问时关键词命中 top_k 段注入上下文。
-# 改文件即生效，无需重启。
+# 往 knowledge/ 放 md/txt/tex，按标题切段，提问时关键词命中 top_k 段注入上下文。
+# 改文件即生效，无需重启。extra_dirs 可指定任意多个根（支持 WSL UNC 路径）。
 knowledge:
   enabled: true
   dir: knowledge
+  extra_dirs:
+    - '\\wsl.localhost\Ubuntu-22.04\home\wx\ramfs'   # 单引号：保留双反斜杠 UNC 前缀
   top_k: 3
 
 # ── 会话记忆 ────────────────────────────────────────────

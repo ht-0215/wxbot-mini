@@ -57,29 +57,40 @@ class Chunk:
 
 @dataclass
 class KnowledgeBase:
-    dir: Path = ROOT / "knowledge"
+    """支持多个根目录（本地 + WSL UNC 路径），每个根独立生成相对 source。"""
+
+    dirs: list[Path] = field(default_factory=lambda: [ROOT / "knowledge"])
     top_k: int = 3
     _chunks: list[Chunk] = field(default_factory=list)
     _stamp: float = 0.0
 
     # ── 加载 ────────────────────────────────────────────
+    def _files(self) -> list[tuple[Path, Path]]:
+        out: list[tuple[Path, Path]] = []
+        for base in self.dirs:
+            if not base.is_dir():
+                continue
+            for p in sorted(base.rglob("*")):
+                if p.suffix.lower() in SUFFIXES and p.is_file():
+                    out.append((p, base))
+        return out
+
     def _mtime(self) -> float:
-        if not self.dir.is_dir():
-            return 0.0
-        return max((p.stat().st_mtime for p in self.dir.rglob("*") if p.is_file()), default=0.0)
+        return max(
+            (p.stat().st_mtime for p, _ in self._files()),
+            default=0.0,
+        )
 
     def reload(self, force: bool = False) -> None:
         stamp = self._mtime()
         if not force and stamp == self._stamp:
             return
         chunks: list[Chunk] = []
-        if self.dir.is_dir():
-            for p in sorted(self.dir.rglob("*")):
-                if p.suffix.lower() in SUFFIXES and p.is_file():
-                    chunks += _split(p, self.dir)
+        for p, base in self._files():
+            chunks += _split(p, base)
         self._chunks = chunks
         self._stamp = stamp
-        log.info("知识库已加载：%d 段（%s）", len(chunks), self.dir)
+        log.info("知识库已加载：%d 段（%s）", len(chunks), ", ".join(str(d) for d in self.dirs))
 
     # ── 检索 ────────────────────────────────────────────
     def search(self, question: str, top_k: int | None = None) -> list[Chunk]:
