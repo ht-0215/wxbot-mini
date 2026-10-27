@@ -108,6 +108,7 @@ class KnowledgeBase:
                 tl = t.lower()
                 score += title_low.count(tl) * 3 + body_low.count(tl)
             scored.append((score, c))
+        scored.sort(key=lambda pair: pair[0], reverse=True)   # 高分段优先
         hit = [c for s, c in scored if s > 0]
         if not hit:                        # 无命中：每个文件首段兜底
             seen: set[str] = set()
