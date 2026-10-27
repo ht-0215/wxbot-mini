@@ -17,9 +17,30 @@ from pathlib import Path
 log = logging.getLogger("wxbot.kb")
 
 ROOT = Path(__file__).resolve().parent.parent
-SUFFIXES = (".md", ".markdown", ".txt", ".rst")
+SUFFIXES = (".md", ".markdown", ".txt", ".rst", ".tex")
 MAX_CHUNK_CHARS = 900
 HEADING_RE = re.compile(r"^(#{1,4})\s+(.*)$")
+
+
+def _tex_to_md(text: str) -> str:
+    """LaTeX → 轻 markdown：章节命令转标题，去注释与排版命令。"""
+    out = []
+    for line in text.splitlines():
+        line = line.rstrip()
+        stripped = line.strip()
+        if not stripped or stripped.startswith("%%%"):
+            continue
+        for n, cmd in ((1, "chapter"), (2, "section"), (3, "subsection")):
+            m = re.match(rf"\\{cmd}\*?\{{(.+?)\}}\s*$", stripped)
+            if m:
+                stripped = "#" * n + " " + m.group(1)
+                break
+        else:
+            stripped = re.sub(r"\\(newpage|clearpage|bibliography\{[^}]*\}|maketitle)\b", "", stripped)
+            stripped = re.sub(r"^%\s?", "", stripped)
+        if stripped.strip():
+            out.append(stripped)
+    return "\n".join(out)
 
 
 @dataclass
@@ -90,9 +111,12 @@ class KnowledgeBase:
 
 
 def _split(path: Path, base: Path) -> list[Chunk]:
-    """按标题切段；无标题的文件整体一段。"""
+    """按标题切段；无标题的文件整体一段。tex 先转轻 markdown 再切。"""
     source = path.relative_to(base).as_posix()
-    lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+    raw = path.read_text(encoding="utf-8", errors="replace")
+    if path.suffix.lower() == ".tex":
+        raw = _tex_to_md(raw)
+    lines = raw.splitlines()
     chunks: list[Chunk] = []
     title, buf = "", []
 
