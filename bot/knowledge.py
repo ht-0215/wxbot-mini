@@ -235,9 +235,8 @@ class KnowledgeBase:
                 return hits
         if hits:
             return hits
-        # ④ 全无命中：每个文件首段兜底
-        seen: set[str] = set()
-        return [c for c in self._chunks if not (c.source in seen or seen.add(c.source))][:k]
+        # 全无命中：返回空而不是塞无关首段——让模型如实说"资料未覆盖"
+        return []
 
     def context_block(self, question: str) -> str:
         chunks = self.search(question)
@@ -289,6 +288,7 @@ def _split_code(path: Path, base: Path) -> list[Chunk]:
     chunks: list[Chunk] = []
     buf: list[str] = []
     title = ""
+    last_sig = ""      # 最近一条疑似函数签名行，供独行 "{" 命名用
 
     def flush() -> None:
         nonlocal buf
@@ -297,13 +297,21 @@ def _split_code(path: Path, base: Path) -> list[Chunk]:
             chunks.append(Chunk(source=source, title=title, body=body[:MAX_CHUNK_CHARS * 2]))
         buf = []
 
+    def name_of(line: str) -> str:
+        m = re.match(r"[A-Za-z_][A-Za-z0-9_ \*]*?([A-Za-z_]\w*)\s*[\({]", line)
+        return m.group(1) if m else line[:40]
+
     for line in lines:
         stripped = line.strip()
         if stripped and not stripped.startswith(("*", "//", "#include")) and not line[:1].isspace():
-            if "{" in stripped or stripped.startswith(("struct ", "typedef ", "#define ", "int ", "void ", "static ")):
+            if stripped == "{" and last_sig:
+                flush()                       # 多行签名：名字在上一行
+                title = name_of(last_sig)
+            elif "{" in stripped or stripped.startswith(("struct ", "typedef ", "#define ", "int ", "void ", "static ")):
                 flush()
-                name = re.match(r"[A-Za-z_][A-Za-z0-9_ \*]*?([A-Za-z_]\w*)\s*[\({]", stripped)
-                title = name.group(1) if name else stripped[:40]
+                title = name_of(stripped)
+        if stripped and not stripped.startswith(("//", "/*")):
+            last_sig = stripped if re.match(r"[A-Za-z_][\w \*]*\(?", stripped) else last_sig
         buf.append(line)
         if len(buf) > 120:
             flush()
