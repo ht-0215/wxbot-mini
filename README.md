@@ -31,11 +31,24 @@ python run.py
 | 链接读取 | `read_links` | 消息里的 http(s) 链接抓正文摘要拼进提问 |
 | 时间感知 | `time_context` | 每次提问附带"年-月-日 星期 时:分" |
 | 会话记忆 | `memory.*` | 每会话一个 md：最近 N 条进上下文，超过 `summarize_after` 自动摘要压缩 |
-| 情绪表情包 | `emotions` / `emotion_mode` | 回复末尾 `[开心]` 标签：panel 模式 Alt+E 打开微信表情面板→搜索关键词→回车发第一个结果；folder 模式从 `emojis/<标签>/` 随机发本地图片 |
+| 情绪表情包 | `emotions` / `emotion_mode` | 默认关；hybrid 只查 `stickers/` 本地库秒发，冷词离峰 `--warm` 建库 |
+| 知识库检索 | `knowledge.*` | 见下节，FAE 技术支持核心 |
 | 节流合并 | `rate.*` | 轮询间隔 + 发送前随机间隔，降低风控风险 |
 
 `llm.engine` 两档：`api` 直调 wx_40b 网关；`dsh` 走 `dsh headless`，
 复用 DSH 的 skill / 工具能力（如串口调试、office 文档类技能）。
+
+## 知识库（FAE 核心）
+
+多根检索：`dir`（项目内 knowledge/）+ `extra_dirs`（文档 UNC）+ `code_dirs`（源码子集）。
+
+- 文档按 `#/##/###` 标题切段；tex 自动转轻 markdown；md/txt/rst/tex 四种格式
+- 源码（c/h/dts/dtsi）按顶层函数/宏切段，标题取函数名，可直接问"phy_nocxn 是哪来的"
+- 检索：倒排索引出候选 → BM25 计分（稀有词权重高、tf 饱和、长度归一），
+  标识符自动拆子词（`phy_nocxn`→phy+nocxn）、文件名可搜、同文件最多 2 段防霸屏
+- WSL UNC 路径注意用 YAML 单引号（双引号会折叠 `\\` 前缀）
+- mtime 变化自动重建；UNC 遍历慢，运行期 300s TTL，启动 force 一次（全量约 1 分钟）
+- 建议只挂关心的子目录（arch/csky、drivers/net/phy），整棵内核树首载会到分钟级
 
 ## 配置
 
@@ -45,14 +58,17 @@ python run.py
 ## 结构
 
 ```
-run.py             主循环 + handle()：链接 → 记忆/时间 → LLM → 情绪拆标 → 节流发送
+run.py             主循环 + handle()：链接 → 记忆/时间/知识库 → LLM → 节流发送
 bot/config.py      YAML + 环境变量 → Config
 bot/router.py      会话名 → prompt；监听名单过滤
 bot/llm.py         api / dsh 两档推理；提问拼装；摘要压缩
 bot/memory.py      memory/<会话>.md：摘要 + 最近消息，超量压缩
+bot/knowledge.py   多根知识库：标题/函数切段 + BM25 倒排检索
 bot/webpage.py     链接提取 + 正文纯文本抓取（html.parser，无额外依赖）
-bot/emotion.py     [标签] 解析 + emojis/<情绪>/ 随机配图
-bot/wechat.py      wxauto 封装：unread_chats / read_latest / send / send_image
+bot/emotion.py     [标签] 解析 + stickers/ 表情库 + 面板建库(--warm)
+bot/wechat.py      wxauto/wechatauto 封装：unread_chats / read_latest / send / send_image
+knowledge/         FAE 资料：common/（芯片指南、固件说明）+ 各客户目录
+stickers/          表情图库：一词一图 png
 ```
 
 ## 已知约束
