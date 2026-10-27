@@ -62,6 +62,11 @@ def _subtokens(token: str) -> set[str]:
     return {p.lower() for p in parts} if len(parts) > 1 else set()
 
 
+def _cjk_runs(text: str) -> list[str]:
+    """提取连续中文串，如 'rgmii link 起不来' → ['起不来']，用于短语加分。"""
+    return re.findall(r"[\u4e00-\u9fff]{2,}", text)
+
+
 def _tokens_of(text: str, *, limit: int = 0) -> set[str]:
     """英文/数字 token + 子词 + 中文 2-gram（正文只取前 limit 字防爆炸）。"""
     toks: set[str] = {t.lower() for t in WORD_RE.findall(text)}
@@ -174,9 +179,13 @@ class KnowledgeBase:
             cand |= p
         # ② BM25 精算：idf × tf 饱和 × 长度归一，标题命中加倍
         scored: list[tuple[float, Chunk]] = []
+        q_runs = [r for r in _cjk_runs(question) if len(r) >= 2]
+        # 区分度权重：ASCII 标识符（gs8611）远比中文 2-gram 指向性强
+        wt = {t: (2.0 if re.match(r"[a-z0-9]", t) else 1.0) for t in qt}
         for i in cand:
             c = self._chunks[i]
             body_low, title_low = c.body.lower(), c.title.lower()
+            stem_low = Path(c.source).stem.lower()
             score = 0.0
             for t in qt:
                 idf = self._idf(t, n)
@@ -184,9 +193,19 @@ class KnowledgeBase:
                     continue
                 tf = min(body_low.count(t), 8)
                 denom = tf + _K1 * (1 - _B + _B * self._lens[i] / self._avg_len)
-                score += idf * tf * (_K1 + 1) / denom if denom else 0.0
+                score += wt[t] * (idf * tf * (_K1 + 1) / denom if denom else 0.0)
                 if t in title_low:
-                    score += idf * 2.0
+                    score += wt[t] * idf * 2.0
+                # 文件名命中：gs8611.c、phy.h 这类指向性极强
+                if t in stem_low:
+                    score += wt[t] * idf * 3.0
+            # 短语整体命中加分（长串更具体：每字 0.8，封顶 4）
+            for r in q_runs:
+                w = min(len(r) * 0.8, 4.0)
+                if r in c.title:
+                    score += w
+                elif r in c.body:
+                    score += w * 0.4
             if score > 0:
                 scored.append((score, c))
         scored.sort(key=lambda pair: pair[0], reverse=True)
