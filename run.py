@@ -8,7 +8,9 @@ from __future__ import annotations
 
 import argparse
 import logging
+import logging.handlers
 import random
+import threading
 import time
 from pathlib import Path
 
@@ -82,15 +84,30 @@ def handle(cfg, wx, mem, chat: str, text: str, sender: str, kb=None) -> None:
             log.info("会话 %s 记忆已压缩（%d → %d 条）", chat, len(recent), len(recent[half:]))
 
 
+def _kb_watchdog(kb, interval: float = 30.0) -> None:
+    """后台守护：每 interval 秒查一次 mtime，知识库文件变了自动重建索引。"""
+    while True:
+        time.sleep(interval)
+        try:
+            kb.refresh()
+        except Exception as exc:  # noqa: BLE001
+            log.warning("知识库守护异常: %s", exc)
+
+
 def run(cfg) -> None:
     from bot.wechat import WeChat  # 延迟导入：--check 不需要 wxauto
 
     wx = WeChat()
     mem = mem_mod.SessionMemory(cfg)
     kb = make_kb(cfg) if cfg.knowledge.enabled else None
+    if kb:
+        kb.reload(force=True)            # 启动即建索引，首问不卡
+        threading.Thread(target=_kb_watchdog, args=(kb,), daemon=True).start()
     last_seen: dict[str, str] = {}
+    pending: dict[str, tuple[str, str, float]] = {}   # chat → (text, sender, deadline)
     log.info("进入轮询循环，Ctrl+C 退出")
     while True:
+        now = time.monotonic()
         for chat in wx.unread_chats():
             if not router.should_listen(cfg, chat):
                 continue
@@ -101,7 +118,16 @@ def run(cfg) -> None:
             if text == last_seen.get(chat):
                 continue  # 已回过，去重
             last_seen[chat] = text
-            handle(cfg, wx, mem, chat, text, msgs[-1].sender, kb=kb)
+            # 合并窗口：窗口期内新消息只刷新快照与截止时间，静默后才回答
+            sender = msgs[-1].sender
+            prev = pending.get(chat)
+            if prev:
+                sender = prev[1] or sender
+            pending[chat] = (text, sender, now + cfg.rate.merge_window_seconds)
+        due = [c for c, (_, _, dl) in pending.items() if dl <= now]
+        for chat in due:
+            text, sender, _ = pending.pop(chat)
+            handle(cfg, wx, mem, chat, text, sender, kb=kb)
         time.sleep(cfg.rate.poll_seconds)
 
 
@@ -120,13 +146,28 @@ def warm(cfg, keywords: list[str]) -> None:
         time.sleep(1.0)
 
 
+def setup_logging() -> None:
+    fmt = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
+    root = logging.getLogger()
+    root.setLevel(logging.INFO)
+    sh = logging.StreamHandler()
+    sh.setFormatter(fmt)
+    root.addHandler(sh)
+    log_dir = cfg_mod.ROOT / "logs"
+    log_dir.mkdir(exist_ok=True)
+    fh = logging.handlers.TimedRotatingFileHandler(
+        log_dir / "wxbot.log", when="midnight", backupCount=7, encoding="utf-8")
+    fh.setFormatter(fmt)
+    root.addHandler(fh)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="wxbot-mini")
     parser.add_argument("--check", action="store_true", help="只做配置与连通性自检")
     parser.add_argument("--warm", nargs="*", metavar="关键词", help="离峰批量建表情库，如 --warm 加油 晚安")
     args = parser.parse_args()
 
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
+    setup_logging()
     cfg = cfg_mod.load()
     if args.check:
         check(cfg)

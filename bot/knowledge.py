@@ -126,6 +126,7 @@ class KnowledgeBase:
         return max((p.stat().st_mtime for p, _, _ in self._files()), default=0.0)
 
     def reload(self, force: bool = False) -> None:
+        """同步重载（首次/手动）。运行期建议走 refresh() 的后台路径。"""
         now = time.monotonic()
         if not force and self._chunks and now - self._checked_at < RELOAD_TTL:
             return                       # TTL 内直接用内存索引
@@ -133,10 +134,22 @@ class KnowledgeBase:
         self._checked_at = now
         if not force and stamp == self._stamp:
             return
+        self._build(stamp)
+
+    def refresh(self) -> None:
+        """后台线程用：扫 mtime，变了才重建，不受 TTL 限制。"""
+        try:
+            stamp = self._mtime()
+            self._checked_at = time.monotonic()
+            if stamp != self._stamp:
+                self._build(stamp)
+        except Exception as exc:  # noqa: BLE001
+            log.warning("知识库后台刷新失败: %s", exc)
+
+    def _build(self, stamp: float) -> None:
         chunks: list[Chunk] = []
         for p, base, is_code in self._files():
             chunks += _split_code(p, base) if is_code else _split(p, base)
-        self._chunks = chunks
 
         index: dict[str, set[int]] = {}
         lens: list[int] = []
@@ -147,8 +160,8 @@ class KnowledgeBase:
             lens.append(len(toks))
             for tok in toks:
                 index.setdefault(tok, set()).add(i)
-        self._index = index
-        self._lens = lens
+        # 全部算完再一次性切换，后台重建期间查询读到的仍是旧一致快照
+        self._chunks, self._index, self._lens = chunks, index, lens
         self._avg_len = (sum(lens) / len(lens)) if lens else 1.0
         self._stamp = stamp
         roots = [str(d) for d in self.dirs] + [f"{d}(code)" for d in self.code_dirs]
