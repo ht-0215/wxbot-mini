@@ -4,3 +4,7 @@ __pycache__/
 logs/
 memory/
 emojis/
+# 固件二进制体积大（rootfs 128MB > GitHub 100MB），不入库；只跟踪其中的说明 md
+knowledge/common/setup/*
+!knowledge/common/setup/*.md
+knowledge/common/doc_*/
