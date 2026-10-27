@@ -20,7 +20,8 @@ log = logging.getLogger("wxbot")
 
 def make_kb(cfg) -> kb_mod.KnowledgeBase:
     dirs = [kb_mod.ROOT / cfg.knowledge.dir] + [Path(x) for x in cfg.knowledge.extra_dirs]
-    return kb_mod.KnowledgeBase(dirs=dirs, top_k=cfg.knowledge.top_k)
+    code_dirs = [Path(x) for x in cfg.knowledge.code_dirs]
+    return kb_mod.KnowledgeBase(dirs=dirs, code_dirs=code_dirs, top_k=cfg.knowledge.top_k)
 
 
 def check(cfg) -> None:
@@ -35,9 +36,11 @@ def check(cfg) -> None:
     print(f"memory     : {'开' if cfg.memory.enabled else '关'} dir={cfg.memory.dir} max={cfg.memory.max_history}")
     kb = make_kb(cfg)
     kb.reload(force=True)
-    print(f"knowledge  : {'开' if cfg.knowledge.enabled else '关'} roots={len(kb.dirs)} chunks={len(kb._chunks)}")
+    print(f"knowledge  : {'开' if cfg.knowledge.enabled else '关'} chunks={len(kb._chunks)}")
     for d in kb.dirs:
-        print(f"  - {d}  ({'目录存在' if d.is_dir() else '不可达'})")
+        print(f"  doc  {d}  ({'存在' if d.is_dir() else '不可达'})")
+    for d in kb.code_dirs:
+        print(f"  code {d}  ({'存在' if d.is_dir() else '不可达'})")
     if cfg.engine == "api":
         reply = llm.ask(cfg, llm.SYSTEM_HINT, "回复“ok”两个字母即可")
         print(f"模型连通性 : {reply[:60]}")

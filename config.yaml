@@ -45,6 +45,13 @@ knowledge:
   dir: knowledge
   extra_dirs:
     - '\\wsl.localhost\Ubuntu-22.04\home\wx\ramfs'   # 单引号：保留双反斜杠 UNC 前缀
+  # 源码根：只挂关心的子目录（c/h/dts 参与检索），整棵树太大
+  code_dirs:
+    - '\\wsl.localhost\Ubuntu-22.04\opt\kernel\linux-4.9.56-2023-6-2\linux-4.9.56\arch\csky'
+    - '\\wsl.localhost\Ubuntu-22.04\opt\kernel\linux-4.9.56-2023-6-2\linux-4.9.56\arch-csky-drivers'
+    - '\\wsl.localhost\Ubuntu-22.04\opt\kernel\linux-4.9.56-2023-6-2\linux-4.9.56\drivers\net\phy'
+    - '\\wsl.localhost\Ubuntu-22.04\home\wx\dev\wx-sdk\kyland_api-V1.0.6'
+    - '\\wsl.localhost\Ubuntu-22.04\home\wx\dev\wx-sdk\phy'
   top_k: 3
 
 # ── 会话记忆 ────────────────────────────────────────────
