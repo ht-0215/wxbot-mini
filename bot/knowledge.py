@@ -199,13 +199,13 @@ class KnowledgeBase:
                 # 文件名命中：gs8611.c、phy.h 这类指向性极强
                 if t in stem_low:
                     score += wt[t] * idf * 3.0
-            # 短语整体命中加分（长串更具体：每字 0.8，封顶 4）
+            # 短语整体命中加分：越长越具体，>=4 字串在正文命中也给足权重
             for r in q_runs:
                 w = min(len(r) * 0.8, 4.0)
                 if r in c.title:
                     score += w
                 elif r in c.body:
-                    score += w * 0.4
+                    score += w * (1.0 if len(r) >= 4 else 0.4)
             if score > 0:
                 scored.append((score, c))
         scored.sort(key=lambda pair: pair[0], reverse=True)
