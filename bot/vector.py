@@ -47,8 +47,14 @@ class VectorIndex:
             os.environ.setdefault("HF_ENDPOINT", "https://hf-mirror.com")  # 国内镜像兜底
             if os.environ.get("HF_HOME") or _model_cached():
                 os.environ.setdefault("HF_HUB_OFFLINE", "1")   # 已有本地缓存就不再联网核对
+            os.environ.setdefault("OMP_NUM_THREADS", "8")      # CPU 推理线程数
             from sentence_transformers import SentenceTransformer  # noqa: PLC0415
             self.model = SentenceTransformer(MODEL_NAME)
+            try:
+                import torch
+                torch.set_num_threads(8)
+            except Exception:  # noqa: BLE001
+                pass
             log.info("嵌入模型已加载: %s", MODEL_NAME)
             return True
         except Exception as exc:  # noqa: BLE001
