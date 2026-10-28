@@ -53,30 +53,17 @@ def check(cfg) -> None:
 
 
 def handle(cfg, wx, mem, chat: str, text: str, sender: str, kb=None) -> None:
-    """一条完整链路：链接增强 → 记忆/时间/知识库上下文 → LLM → 节流发送。"""
+    """一条完整链路：链接增强 → 记忆/时间/知识库上下文 → LLM → 节流发送（纯文本，DB-only）。"""
     enriched = webpage.enrich(cfg, text)
     question = llm.build_question(cfg, mem, chat, sender, enriched, kb=kb)
     system = router.system_prompt_for(cfg, chat)
     reply = llm.ask(cfg, system, question)
 
-    body, emo = emotion.split_reply(reply)
-    if not cfg.features.emotions:
-        body, emo = reply.strip(), None
-
+    body = reply.strip()
     lo, hi = cfg.rate.send_interval
     if body:
         time.sleep(random.uniform(lo, hi))
         wx.send(chat, body)
-    if emo:
-        time.sleep(random.uniform(lo, hi))
-        img = emotion.pick_image(emo)
-        if img is not None:
-            wx.send_image(chat, img)          # 库命中：直接发文件，几乎不占前台
-        elif cfg.features.emotion_mode == "panel":
-            wx.focus(chat)                    # 显式 panel 模式才在回复里走面板
-            emotion.send_from_panel(emo)
-        else:
-            log.info("表情[%s]不在库中，本轮只发文本（离峰跑 python run.py --warm %s 建库）", emo, emo)
 
     mem.append(chat, sender, text)
     if mem.needs_summarize(chat):
@@ -195,7 +182,7 @@ def serve(cfg) -> None:
 
 
 def warm(cfg, keywords: list[str]) -> None:
-    """离峰建库：逐个关键词走面板搜索，把结果存进 stickers/。"""
+    """离峰建库：走面板截图存 stickers/。（面板依赖前台，默认不在主链路。）"""
     from bot.wechat import WeChat
 
     wx = WeChat()

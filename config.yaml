@@ -33,7 +33,7 @@ features:
   read_links: true
   # 每次提问附带当前时间（年-月-日 星期 时:分）
   time_context: true
-  # 表情包：FAE 技术支持场景默认关闭
+  # 表情包：默认关闭；主链路为 DB-only 纯文本（面板等前台方案已弃用）
   emotions: false
   emotion_mode: hybrid
 

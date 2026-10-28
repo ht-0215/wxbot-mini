@@ -59,7 +59,7 @@ class WeChat:
             log.warning("切换会话 %s 失败: %s", chat, exc)
 
     def read_latest(self, chat: str) -> list[Message]:
-        """优先读会话列表 summary（数据库路径，快且稳）；取不到再走 UIA。"""
+        """DB-only：读会话列表 summary（解密本地库，不占前台）。"""
         try:
             for s in self._wx.GetSession():
                 if s.name != chat:
@@ -72,20 +72,8 @@ class WeChat:
                         return [Message(chat=chat, sender=sender.strip(), text=rest.strip())]
                     return [Message(chat=chat, sender="", text=summary)]
         except Exception as exc:  # noqa: BLE001
-            log.debug("会话列表读取失败，回落 UIA: %s", exc)
-        msgs: list[Message] = []
-        try:
-            self._wx.ChatWith(chat)
-            for m in self._wx.GetAllMessage()[-5:]:
-                if getattr(m, "type", "") != "text":
-                    continue
-                sender = str(getattr(m, "attr", "") or "")
-                text = str(getattr(m, "content", "") or "").strip()
-                if text:
-                    msgs.append(Message(chat=chat, sender=sender, text=text))
-        except Exception as exc:  # noqa: BLE001
             log.warning("读取会话 %s 失败: %s", chat, exc)
-        return msgs
+        return []
 
     def send(self, chat: str, text: str) -> None:
         try:

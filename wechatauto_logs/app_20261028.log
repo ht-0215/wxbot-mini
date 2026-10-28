@@ -217,3 +217,7 @@
 2026-10-28 11:09:26 [wechatauto] [DEBUG] [uia_driver.py:1012]  聊天页那一片已经渲染，不点导航栏
 2026-10-28 11:09:38 [wechatauto] [DEBUG] [guia.py:1691]  未检测到输入框
 2026-10-28 11:09:38 [wechatauto] [INFO] [guia.py:1696]  输入框探测连续失败，自动重新校准布局…
+2026-10-28 11:26:30 [wechatauto] [DEBUG] [guia.py:290]  WinInput 初始化，屏幕尺寸：2520x1680
+2026-10-28 11:26:30 [wechatauto] [INFO] [guia.py:879]  已加载布局校准（portrait）：sidebar_ratio=1.000
+2026-10-28 11:26:30 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=2756176, render=6098890, rect=(723, 94, 1895, 1606)
+2026-10-28 11:26:32 [wxbot.wechat] [INFO] [wechat.py:43]  已连接微信客户端（后端: wechatauto）
