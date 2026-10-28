@@ -64,6 +64,11 @@ class WeChat:
         log.info("已连接微信客户端（后端: %s，窗口: %s）",
                  self.backend, hwnd or title or "默认")
 
+    @property
+    def db(self):
+        """底层 WeChatDB，供 RecallGuard 等复用。"""
+        return getattr(self._wx, "_db", None)
+
     def unread_chats(self) -> list[str]:
         """未读会话名单：GetSession 列表里 unread>0 的行。"""
         try:

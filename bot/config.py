@@ -62,6 +62,7 @@ class FeatureCfg:
     time_context: bool = True
     emotions: bool = False        # 表情包：FAE 技术支持场景默认关闭
     emotion_mode: str = "hybrid"  # hybrid: 只查 stickers/ 本地库秒发；panel: 允许面板补图
+    recall_guard: bool = False    # T6 防撤回：留档被撤回的消息，聊天里 /撤回 查询
 
 
 @dataclass
@@ -150,6 +151,7 @@ def load(path: Path | None = None) -> Config:
             time_context=bool(feat_d.get("time_context", True)),
             emotions=bool(feat_d.get("emotions", False)),
             emotion_mode=str(feat_d.get("emotion_mode", "hybrid")),
+            recall_guard=bool(feat_d.get("recall_guard", False)),
         ),
         memory=MemoryCfg(
             enabled=bool(mem_d.get("enabled", True)),

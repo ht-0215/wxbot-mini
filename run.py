@@ -53,12 +53,12 @@ def check(cfg) -> None:
         print(f"模型连通性 : {reply[:60]}")
 
 
-def handle(cfg, wx, mem, chat: str, text: str, sender: str, kb=None, sched=None) -> str:
+def handle(cfg, wx, mem, chat: str, text: str, sender: str, kb=None, sched=None, guard=None) -> str:
     """一条完整链路：指令/提醒 → 链接增强 → 记忆/时间/知识库上下文 → LLM → 节流发送。
 
     返回实际发出的文本（供主循环登记回声），空串表示未发送。
     """
-    cmd_reply = commands.dispatch(cfg, mem, kb, chat, text)
+    cmd_reply = commands.dispatch(cfg, mem, kb, chat, text, guard=guard)
     if cmd_reply is not None:
         lo0, hi0 = cfg.rate.send_interval
         time.sleep(random.uniform(lo0, hi0))
@@ -121,6 +121,10 @@ def run(cfg) -> None:
     mem = mem_mod.SessionMemory(cfg)
     sched = Scheduler(send=wx.send)
     threading.Thread(target=sched.run_forever, kwargs={"interval": 5.0}, daemon=True).start()
+    guard = None
+    if cfg.features.recall_guard:
+        from bot.recall import make_guard
+        guard = make_guard(wx)
     kb = make_kb(cfg) if cfg.knowledge.enabled else None
     if kb:
         kb.reload(force=True)            # 启动即建索引，首问不卡
@@ -165,7 +169,7 @@ def run(cfg) -> None:
         due = [c for c, (_, _, dl) in pending.items() if dl <= now]
         for chat in due:
             text, sender, _ = pending.pop(chat)
-            reply = handle(cfg, wx, mem, chat, text, sender, kb=kb, sched=sched)
+            reply = handle(cfg, wx, mem, chat, text, sender, kb=kb, sched=sched, guard=guard)
             if reply:
                 last_reply[chat] = reply
                 last_seen[chat] = reply     # 发完摘要会变成回复文本，预先登记
