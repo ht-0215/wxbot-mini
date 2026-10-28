@@ -18,6 +18,7 @@ class ApiCfg:
     model: str = "wx_40b"
     api_key_env: str = "WX40B_API_KEY"
     timeout_seconds: int = 120
+    max_tokens: int = 700           # 答复封顶，控尾延；FAE 结论通常 300~500
 
     @property
     def api_key(self) -> str:
@@ -118,6 +119,7 @@ def load(path: Path | None = None) -> Config:
             model=api_d.get("model", ApiCfg.model),
             api_key_env=api_d.get("api_key_env", ApiCfg.api_key_env),
             timeout_seconds=int(api_d.get("timeout_seconds", 120)),
+            max_tokens=int(api_d.get("max_tokens", 700)),
         ),
         dsh=DshCfg(command=dsh_d.get("command", "dsh"), args=list(dsh_d.get("args") or ["headless"])),
         rate=RateCfg(

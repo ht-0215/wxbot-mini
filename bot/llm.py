@@ -52,6 +52,8 @@ def _ask_api(cfg: Config, system: str, question: str) -> str:
             {"role": "system", "content": system},
             {"role": "user", "content": question},
         ],
+        # 答复封顶：FAE 结论 300~500 token 足够，限制长度也就是限制尾延
+        "max_tokens": cfg.api.max_tokens,
     }
     req = urllib.request.Request(
         url,
