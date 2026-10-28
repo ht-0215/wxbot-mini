@@ -24,6 +24,15 @@ CASES = [
     ("rgmii 和 gmii 有什么区别", ["rgmii", "gmii", "GMII"], "接口概念"),
     ("端口加入vlan 10 并设为access口", ["pvid", "untagged", "access"], "VLAN 配置实操"),
     ("启动脚本放在哪里", ["start.sh", "/mnt/flash", "rcS", "init.d", "startup.sh", "loadsoc", "emmcauto"], "demo 板实操"),
+    # 第二轮：跨模块 / 寄存器级 / 口语长句
+    ("外置PHY gs8611 怎么读写寄存器", ["mdio", "phy", "reg"], "外置PHY"),
+    ("ACL 怎么做基于流的分类", ["acl", "分类", "规则"], "ACL"),
+    ("组播怎么加成员端口", ["mc", "leaf", "成员"], "组播API"),
+    ("PTP是什么 有什么用途", ["ptp", "时钟", "同步"], "PTP"),
+    ("固件包里 dtb 和 kernel 分别是什么文件", ["dtb", "uImage", "Image"], "固件结构"),
+    ("串口升级pmon怎么做", ["ymodem", "pmon", "load"], "boot升级"),
+    ("流量整形 shaper 的速率粒度取决于什么", ["粒度", "shaper", "时钟", "MHz"], "QoS细节"),
+    ("jffs2 rootfs 和 ramfs 该选哪个", ["jffs", "ramfs", "nor", "nand"], "fs选型"),
 ]
 
 
