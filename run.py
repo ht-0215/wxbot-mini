@@ -89,6 +89,12 @@ def handle(cfg, wx, mem, chat: str, text: str, sender: str, kb=None, sched=None)
         if new_summary:
             mem.rewrite(chat, new_summary, recent[half:])
             log.info("会话 %s 记忆已压缩（%d → %d 条）", chat, len(recent), len(recent[half:]))
+        else:
+            # T9 降级：摘要失败不静默堆积，截断保留最近 2×max_history 条
+            keep = cfg.memory.max_history * 2
+            if len(recent) > keep:
+                mem.rewrite(chat, old_summary, recent[-keep:])
+                log.info("会话 %s 摘要失败，截断保留最近 %d 条", chat, keep)
     return body if body else ""
 
 
