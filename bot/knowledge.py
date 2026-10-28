@@ -14,6 +14,7 @@ from __future__ import annotations
 import logging
 import math
 import re
+import threading
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -106,12 +107,14 @@ class KnowledgeBase:
     dirs: list[Path] = field(default_factory=lambda: [ROOT / "knowledge"])
     code_dirs: list[Path] = field(default_factory=list)
     top_k: int = 3
+    hybrid: bool = True                 # BM25 ∪ 向量 重排；模型缺失自动退回纯 BM25
     _chunks: list[Chunk] = field(default_factory=list)
     _index: dict[str, set[int]] = field(default_factory=dict)   # token → chunk 下标
     _lens: list[int] = field(default_factory=list)              # 每段 token 数
     _avg_len: float = 1.0
     _stamp: float = 0.0
     _checked_at: float = 0.0
+    _vec: object = None                 # VectorIndex，惰性创建
 
     # ── 加载 ────────────────────────────────────────────
     def _files(self) -> list[tuple[Path, Path, bool]]:
@@ -180,6 +183,33 @@ class KnowledgeBase:
         self._stamp = stamp
         roots = [str(d) for d in self.dirs] + [f"{d}(code)" for d in self.code_dirs]
         log.info("知识库已加载：%d 段 / %d 词（%s）", len(chunks), len(index), ", ".join(roots))
+        if self.hybrid:
+            self._rebuild_vectors(chunks)
+
+    def _rebuild_vectors(self, chunks: list[Chunk]) -> None:
+        """BM25 重建后同步向量索引：优先读缓存，签名不符才后台编码。
+
+        只编码文档段（md/tex/txt，约数百段）；代码段量大且标识符密集，
+        BM25 已够，向量置零不参与语义路。
+        """
+        try:
+            from bot.vector import VectorIndex
+            if self._vec is None:
+                self._vec = VectorIndex()
+            keys = [f"{c.source}#{i}" for i, c in enumerate(chunks)]
+            if self._vec.load_cache(keys):
+                return
+            rows, texts = [], []
+            for i, c in enumerate(chunks):
+                if c.source.lower().endswith((".c", ".h", ".dts", ".dtsi")):
+                    continue
+                rows.append(i)
+                texts.append(c.title + "。" + c.body[:300])
+            th = threading.Thread(target=self._vec.build, args=(keys, texts, rows), daemon=True)
+            th.start()          # 编码耗时放在后台，不阻塞启动
+        except Exception as exc:  # noqa: BLE001
+            log.debug("向量索引跳过: %s", exc)
+            self._vec = None
 
     # ── 计分 ────────────────────────────────────────────
     def _idf(self, term: str, n_chunks: int) -> float:
@@ -246,12 +276,15 @@ class KnowledgeBase:
             elif len(c.body) >= 400:
                 score *= 1.1
             if score > 0:
-                scored.append((score, c))
+                scored.append((score, i))
         scored.sort(key=lambda pair: pair[0], reverse=True)
-        # ③ 来源多样性：同文件最多 PER_SOURCE_CAP 段
+        # ③ 混合重排：BM25 名次 + 向量余弦，两路互为兜底
+        merged = self._hybrid_merge(scored, question)
+        # ④ 来源多样性：同文件最多 PER_SOURCE_CAP 段
         hits: list[Chunk] = []
         per_source: dict[str, int] = {}
-        for _, c in scored:
+        for i in merged:
+            c = self._chunks[i]
             cnt = per_source.get(c.source, 0)
             if cnt >= PER_SOURCE_CAP:
                 continue
@@ -263,6 +296,27 @@ class KnowledgeBase:
             return hits
         # 全无命中：返回空而不是塞无关首段——让模型如实说"资料未覆盖"
         return []
+
+    def _hybrid_merge(self, scored: list[tuple[float, int]], question: str) -> list[int]:
+        """BM25 归一分 ×0.6 + 向量余弦 ×0.4；任一路缺失则用另一路。"""
+        bm: dict[int, float] = {}
+        if scored:
+            top = scored[0][0] or 1.0
+            for s, i in scored[:40]:
+                bm[i] = s / top
+        vec: dict[int, float] = {}
+        if self.hybrid and self._vec is not None:
+            for i, sim in self._vec.top(question, len(self._chunks)):
+                if 0 <= i < len(self._chunks):
+                    vec[i] = max(sim, 0.0)
+        if not bm:
+            return [i for i, _ in sorted(vec.items(), key=lambda kv: -kv[1])]
+        if not vec:
+            return [i for _, i in scored]
+        fused = {i: 0.6 * s for i, s in bm.items()}
+        for i, s in vec.items():
+            fused[i] = fused.get(i, 0.0) + 0.4 * s
+        return sorted(fused, key=lambda i: -fused[i])
 
     def context_block(self, question: str) -> str:
         chunks = self.search(question)

@@ -27,7 +27,8 @@ log = logging.getLogger("wxbot")
 def make_kb(cfg) -> kb_mod.KnowledgeBase:
     dirs = [kb_mod.ROOT / cfg.knowledge.dir] + [Path(x) for x in cfg.knowledge.extra_dirs]
     code_dirs = [Path(x) for x in cfg.knowledge.code_dirs]
-    return kb_mod.KnowledgeBase(dirs=dirs, code_dirs=code_dirs, top_k=cfg.knowledge.top_k)
+    return kb_mod.KnowledgeBase(dirs=dirs, code_dirs=code_dirs,
+                                top_k=cfg.knowledge.top_k, hybrid=cfg.knowledge.hybrid)
 
 
 def check(cfg) -> None:

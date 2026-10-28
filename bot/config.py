@@ -52,6 +52,7 @@ class KnowledgeCfg:
     extra_dirs: List[str] = field(default_factory=list)  # 额外文档根，支持 WSL UNC 路径
     code_dirs: List[str] = field(default_factory=list)   # 源码根（c/h/dts），建议只挂子目录
     top_k: int = 3
+    hybrid: bool = True             # BM25+向量混合重排；无模型自动退纯 BM25
 
 
 @dataclass
