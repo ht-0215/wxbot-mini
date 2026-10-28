@@ -238,8 +238,9 @@ class KnowledgeBase:
         # ② BM25 精算：idf × tf 饱和 × 长度归一，标题命中加倍
         scored: list[tuple[float, Chunk]] = []
         q_runs = [r for r in _cjk_runs(question) if len(r) >= 2]
-        # 区分度权重：ASCII 标识符（gs8611）远比中文 2-gram 指向性强
-        wt = {t: (2.0 if re.match(r"[a-z0-9]", t) else 1.0) for t in qt}
+        # 区分度权重：较长 ASCII 标识符（gs8611/kd5886）远比中文 2-gram 指向性强；
+        # 3 字符以下的碎片（nor/sf）容易撞 define 名，不加权。
+        wt = {t: (2.0 if re.match(r"[a-z0-9]", t) and len(t) >= 4 else 1.0) for t in qt}
         for i in cand:
             c = self._chunks[i]
             body_low, title_low = c.body.lower(), c.title.lower()
@@ -299,24 +300,25 @@ class KnowledgeBase:
         return []
 
     def _hybrid_merge(self, scored: list[tuple[float, int]], question: str) -> list[int]:
-        """BM25 归一分 ×0.6 + 向量余弦 ×0.4；任一路缺失则用另一路。"""
-        bm: dict[int, float] = {}
-        if scored:
-            top = scored[0][0] or 1.0
-            for s, i in scored[:40]:
-                bm[i] = s / top
-        vec: dict[int, float] = {}
+        """RRF 名次融合：score = Σ 1/(60+rank)，BM25 与向量两路等权；
+        任一路缺失则直接用另一路。名次融合不受两路分数量纲差异影响。"""
+        bm = [i for _, i in scored[:40]]
+        vec: list[int] = []
         if self.hybrid and self._vec is not None:
-            for i, sim in self._vec.top(question, len(self._chunks)):
-                if 0 <= i < len(self._chunks):
-                    vec[i] = max(sim, 0.0)
+            seen: set[int] = set()
+            for i, _sim in self._vec.top(question, len(self._chunks), k=20):
+                if 0 <= i < len(self._chunks) and i not in seen:
+                    seen.add(i)
+                    vec.append(i)
         if not bm:
-            return [i for i, _ in sorted(vec.items(), key=lambda kv: -kv[1])]
+            return vec
         if not vec:
-            return [i for _, i in scored]
-        fused = {i: 0.6 * s for i, s in bm.items()}
-        for i, s in vec.items():
-            fused[i] = fused.get(i, 0.0) + 0.4 * s
+            return bm
+        fused: dict[int, float] = {}
+        for rank, i in enumerate(bm):
+            fused[i] = fused.get(i, 0.0) + 1.0 / (60 + rank)
+        for rank, i in enumerate(vec):
+            fused[i] = fused.get(i, 0.0) + 1.0 / (60 + rank)
         return sorted(fused, key=lambda i: -fused[i])
 
     def context_block(self, question: str) -> str:
