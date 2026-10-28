@@ -36,6 +36,25 @@ def _import_backend():
         ) from exc
 
 
+# 会话列表里的非文本占位符：语音开了"自动转文字"会变成真实文本，
+# 否则是这类占位——占位直接跳过，不把 [语音] 当问题送模型。
+_PLACEHOLDER = ("[语音]", "[图片]", "[动画表情]", "[Sticker]", "[语音通话]")
+
+
+def _clean_summary(text: str) -> str:
+    text = text.strip()
+    head, _, tail = text.partition(":")
+    body = tail.strip() if tail.strip() else text
+    for ph in _PLACEHOLDER:
+        if body == ph or body == ph.replace("[", "【").replace("]", "】"):
+            return ""
+        if tail.strip() and body.endswith(ph) and len(body) <= len(ph) + 2:
+            return ""
+        if not tail.strip() and text.endswith(ph) and len(text) <= len(ph) + 2:
+            return ""
+    return text
+
+
 class WeChat:
     def __init__(self, hwnd: int | None = None, title: str | None = None) -> None:
         """hwnd/title 可选：双开时把 UI 操作固定到指定窗口。
@@ -91,7 +110,7 @@ class WeChat:
             for s in self._wx.GetSession():
                 if s.name != chat:
                     continue
-                summary = str(getattr(s, "summary", "") or "").strip()
+                summary = _clean_summary(str(getattr(s, "summary", "") or ""))
                 if summary:
                     sender, _, rest = summary.partition(":")
                     # 群列表常是 "昵称:消息"；单人会话无冒号则整体当正文

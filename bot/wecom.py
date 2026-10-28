@@ -130,7 +130,8 @@ class BotService:
         from bot import commands, llm, router
 
         chat = inc.name or inc.userid or "wecom"
-        cmd = commands.dispatch(self.cfg, self.mem, self.kb, chat, text)
+        cmd = commands.dispatch(self.cfg, self.mem, self.kb, chat, text,
+                                guard=getattr(self, "guard", None))
         if cmd is not None:
             return cmd
         note = self.sched.add(chat, text)

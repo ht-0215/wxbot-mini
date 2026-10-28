@@ -3,3 +3,7 @@
 2026-10-29 00:31:07 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=462096, render=462080, rect=(-31987, -32000, -29859, -30750)
 2026-10-29 00:31:08 [wxbot.wechat] [INFO] [wechat.py:64]  已连接微信客户端（后端: wechatauto，窗口: 默认）
 2026-10-29 00:31:08 [wxbot.recall] [INFO] [recall.py:25]  防撤回已启用（mirror=默认）
+2026-10-29 00:31:37 [wechatauto] [DEBUG] [guia.py:290]  WinInput 初始化，屏幕尺寸：2520x1680
+2026-10-29 00:31:37 [wechatauto] [INFO] [guia.py:879]  已加载布局校准（wide）：sidebar_ratio=0.289
+2026-10-29 00:31:37 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=462096, render=462080, rect=(-31987, -32000, -29859, -30750)
+2026-10-29 00:31:38 [wxbot.wechat] [INFO] [wechat.py:64]  已连接微信客户端（后端: wechatauto，窗口: 默认）
