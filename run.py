@@ -102,6 +102,11 @@ def _kb_watchdog(kb, interval: float = 30.0) -> None:
             log.warning("知识库守护异常: %s", exc)
 
 
+def _kb_signature(cfg) -> tuple:
+    k = cfg.knowledge
+    return (k.enabled, k.dir, tuple(k.extra_dirs), tuple(k.code_dirs), k.top_k, k.hybrid)
+
+
 def run(cfg) -> None:
     from bot.wechat import WeChat  # 延迟导入：--check 不需要 wxauto
     from bot.scheduler import Scheduler
@@ -117,9 +122,19 @@ def run(cfg) -> None:
     last_seen: dict[str, str] = {}
     last_reply: dict[str, str] = {}   # chat → 上一条自己发出的文本，防自回复触发
     pending: dict[str, tuple[str, str, float]] = {}   # chat → (text, sender, deadline)
+    kb_sig = _kb_signature(cfg)
     log.info("进入轮询循环，Ctrl+C 退出")
     while True:
         now = time.monotonic()
+        if cfg_mod.reload_into(cfg):
+            log.info("config.yaml 已热重载")
+            sig = _kb_signature(cfg)
+            if sig != kb_sig:                     # 知识库配置变了：重建
+                kb_sig = sig
+                kb = make_kb(cfg) if cfg.knowledge.enabled else None
+                if kb:
+                    threading.Thread(target=kb.reload, kwargs={"force": True},
+                                     daemon=True).start()
         for chat in wx.unread_chats():
             if not router.should_listen(cfg, chat):
                 continue

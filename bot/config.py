@@ -12,6 +12,24 @@ ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_CONFIG = ROOT / "config.yaml"
 
 
+def reload_into(cfg: Config, path: Path | None = None) -> bool:
+    """重读 YAML 并原地替换 cfg 的各字段（保持对象引用不变）。mtime 没变返回 False。"""
+    path = path or DEFAULT_CONFIG
+    try:
+        m = path.stat().st_mtime
+    except OSError:
+        return False
+    if getattr(cfg, "_mtime", 0.0) == m:
+        return False
+    fresh = load(path)
+    for f in ("engine", "api", "dsh", "rate", "features", "memory",
+              "knowledge", "wecom", "window", "prompts", "routes",
+              "listen", "at_names"):
+        setattr(cfg, f, getattr(fresh, f))
+    cfg._mtime = m
+    return True
+
+
 @dataclass
 class ApiCfg:
     base_url: str = "http://127.0.0.1:4000/v1"
@@ -112,7 +130,7 @@ def load(path: Path | None = None) -> Config:
     wc_d = raw.get("wecom") or {}
     wd_d = raw.get("window") or {}
 
-    return Config(
+    cfg = Config(
         engine=str(llm.get("engine", "api")),
         api=ApiCfg(
             base_url=api_d.get("base_url", ApiCfg.base_url),
@@ -160,3 +178,8 @@ def load(path: Path | None = None) -> Config:
         listen=list(raw.get("listen") or []),
         at_names=list(raw.get("at_names") or []),
     )
+    try:
+        cfg._mtime = path.stat().st_mtime
+    except OSError:
+        cfg._mtime = 0.0
+    return cfg

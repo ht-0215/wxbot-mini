@@ -66,7 +66,9 @@ def _ask_api(cfg: Config, system: str, question: str) -> str:
     )
     with urllib.request.urlopen(req, timeout=cfg.api.timeout_seconds) as resp:
         data = json.loads(resp.read().decode("utf-8"))
-    return data["choices"][0]["message"]["content"].strip()
+    choices = data.get("choices") or []
+    content = ((choices[0] if choices else {}).get("message") or {}).get("content") if choices else None
+    return (content or "").strip()
 
 
 def _ask_dsh(cfg: Config, question: str) -> str:
@@ -76,11 +78,18 @@ def _ask_dsh(cfg: Config, question: str) -> str:
 
 
 def ask(cfg: Config, system: str, question: str) -> str:
-    """返回模型回复文本；失败时返回简短错误说明，保证调用方可直接发送。"""
+    """返回模型回复文本；空返回重试一次，失败时给简短可发送的说明。"""
     try:
-        if cfg.engine == "dsh":
-            return _ask_dsh(cfg, question) or "（模型返回为空）"
-        return _ask_api(cfg, system, question) or "（模型返回为空）"
+        for attempt in range(2):
+            if cfg.engine == "dsh":
+                out = _ask_dsh(cfg, question)
+            else:
+                out = _ask_api(cfg, system, question)
+            if out:
+                return out
+            if attempt == 0:
+                log.info("模型返回为空，重试一次")
+        return "（模型返回为空）"
     except Exception as exc:  # noqa: BLE001
         log.warning("LLM 调用失败: %s", exc)
         return f"（稍后回复你，刚才接口超时：{exc.__class__.__name__}）"
