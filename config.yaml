@@ -92,3 +92,10 @@ wecom:
   host: 0.0.0.0
   port: 8090
   token: ""
+
+# ── 窗口绑定（双开微信时固定 bot 用哪个窗口）────────────
+# 优先级 hwnd > title；都为 0/空则跟随系统默认。
+# python run.py --wins 可列出当前所有微信窗口的 hwnd 与位置。
+window:
+  hwnd: 0
+  title: ""

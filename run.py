@@ -93,7 +93,7 @@ def _kb_watchdog(kb, interval: float = 30.0) -> None:
 def run(cfg) -> None:
     from bot.wechat import WeChat  # 延迟导入：--check 不需要 wxauto
 
-    wx = WeChat()
+    wx = WeChat(hwnd=cfg.window.hwnd or None, title=cfg.window.title or None)
     mem = mem_mod.SessionMemory(cfg)
     kb = make_kb(cfg) if cfg.knowledge.enabled else None
     if kb:
@@ -225,10 +225,22 @@ def setup_logging() -> None:
     root.addHandler(fh)
 
 
+def list_windows() -> None:
+    """打印所有微信主窗口：hwnd、标题、位置，供 window 配置选择。"""
+    import uiautomation as auto
+    for w in auto.GetRootControl().GetChildren():
+        if (w.ClassName or "") != "mmui::MainWindow":
+            continue
+        r = w.BoundingRectangle
+        print(f"hwnd={w.NativeWindowHandle:<10} title={w.Name!r:<8} "
+              f"rect=({r.left},{r.top},{r.right},{r.bottom})")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="wxbot-mini")
     parser.add_argument("--check", action="store_true", help="只做配置与连通性自检")
     parser.add_argument("--serve", action="store_true", help="企业微信智能机器人 HTTP 回调服务")
+    parser.add_argument("--wins", action="store_true", help="列出微信主窗口 hwnd/位置")
     parser.add_argument("--warm", nargs="*", metavar="关键词", help="离峰批量建表情库，如 --warm 加油 晚安")
     args = parser.parse_args()
 
@@ -236,6 +248,9 @@ def main() -> None:
     cfg = cfg_mod.load()
     if args.check:
         check(cfg)
+        return
+    if args.wins:
+        list_windows()
         return
     if args.warm is not None:
         kws = args.warm or ["开心", "收到", "加油"]

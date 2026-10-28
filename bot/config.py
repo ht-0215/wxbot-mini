@@ -64,6 +64,13 @@ class WecomCfg:
 
 
 @dataclass
+class WindowCfg:
+    """双开微信时绑定 bot 使用的窗口：hwnd 优先，其次 title；都空=跟随默认。"""
+    hwnd: int = 0
+    title: str = ""
+
+
+@dataclass
 class MemoryCfg:
     enabled: bool = True
     dir: str = "memory"
@@ -81,6 +88,7 @@ class Config:
     memory: MemoryCfg = field(default_factory=MemoryCfg)
     knowledge: KnowledgeCfg = field(default_factory=KnowledgeCfg)
     wecom: WecomCfg = field(default_factory=WecomCfg)
+    window: WindowCfg = field(default_factory=WindowCfg)
     prompts: Dict[str, str] = field(default_factory=dict)
     routes: Dict[str, str] = field(default_factory=dict)
     listen: List[str] = field(default_factory=list)
@@ -101,6 +109,7 @@ def load(path: Path | None = None) -> Config:
     mem_d = raw.get("memory") or {}
     kb_d = raw.get("knowledge") or {}
     wc_d = raw.get("wecom") or {}
+    wd_d = raw.get("window") or {}
 
     return Config(
         engine=str(llm.get("engine", "api")),
@@ -139,6 +148,10 @@ def load(path: Path | None = None) -> Config:
             host=str(wc_d.get("host", "0.0.0.0")),
             port=int(wc_d.get("port", 8090)),
             token=str(wc_d.get("token", "")),
+        ),
+        window=WindowCfg(
+            hwnd=int(wd_d.get("hwnd", 0) or 0),
+            title=str(wd_d.get("title", "") or ""),
         ),
         prompts=dict(raw.get("prompts") or {}),
         routes=dict(raw.get("routes") or {}),

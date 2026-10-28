@@ -37,10 +37,32 @@ def _import_backend():
 
 
 class WeChat:
-    def __init__(self) -> None:
+    def __init__(self, hwnd: int | None = None, title: str | None = None) -> None:
+        """hwnd/title 可选：双开时把 UI 操作固定到指定窗口。
+
+        不传则沿用库默认（跟随激活窗口）。GetSession 走共享 DB 不受影响；
+        SendMsg/ChatWith 等 UI 动作会绑定所选窗口。
+        """
         cls, self.backend = _import_backend()
-        self._wx = cls()
-        log.info("已连接微信客户端（后端: %s）", self.backend)
+        gui = None
+        if hwnd or title:
+            try:
+                gui_mod = (__import__("wxauto.guia", fromlist=["WeChatGUI"])
+                           if self.backend == "wxauto"
+                           else __import__("wechatauto.guia", fromlist=["WeChatGUI"]))
+                gui = gui_mod.WeChatGUI(title=title or "微信", hwnd=hwnd)
+            except Exception as exc:  # noqa: BLE001
+                log.warning("窗口绑定失败(%s)，回落默认: %s", (title or hwnd), exc)
+        self._wx = None
+        if gui is not None:
+            try:
+                self._wx = cls(gui=gui)
+            except Exception as exc:  # noqa: BLE001
+                log.debug("gui 参数不被支持: %s", exc)
+        if self._wx is None:
+            self._wx = cls()
+        log.info("已连接微信客户端（后端: %s，窗口: %s）",
+                 self.backend, hwnd or title or "默认")
 
     def unread_chats(self) -> list[str]:
         """未读会话名单：GetSession 列表里 unread>0 的行。"""
