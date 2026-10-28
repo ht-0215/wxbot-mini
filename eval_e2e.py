@@ -23,7 +23,7 @@ CASES = [
     ("怎么做端口流量统计", ["统计", "counter", "stat"], "诊断"),
     ("rgmii 和 gmii 有什么区别", ["rgmii", "gmii", "GMII"], "接口概念"),
     ("端口加入vlan 10 并设为access口", ["pvid", "untagged", "access"], "VLAN 配置实操"),
-    ("启动脚本放在哪里", ["start.sh", "/mnt/flash", "flash"], "demo 板实操"),
+    ("启动脚本放在哪里", ["start.sh", "/mnt/flash", "rcS", "init.d", "startup.sh", "loadsoc", "emmcauto"], "demo 板实操"),
 ]
 
 

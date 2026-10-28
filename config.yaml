@@ -52,7 +52,7 @@ knowledge:
     - '\\wsl.localhost\Ubuntu-22.04\opt\kernel\linux-4.9.56-2023-6-2\linux-4.9.56\drivers\net\phy'
     - '\\wsl.localhost\Ubuntu-22.04\home\wx\dev\wx-sdk\kyland_api-V1.0.6'
     - '\\wsl.localhost\Ubuntu-22.04\home\wx\dev\wx-sdk\phy'
-  top_k: 4
+  top_k: 5
 
 # ── 会话记忆 ────────────────────────────────────────────
 memory:

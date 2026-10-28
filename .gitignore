@@ -8,3 +8,5 @@ emojis/
 knowledge/common/setup/*
 !knowledge/common/setup/*.md
 knowledge/common/doc_*/
+# 向量缓存为生成物（160MB 级），首次启动自动重建，不入库
+.vec_cache.npz

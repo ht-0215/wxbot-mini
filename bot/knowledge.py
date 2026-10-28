@@ -25,7 +25,8 @@ ROOT = Path(__file__).resolve().parent.parent
 SUFFIXES = (".md", ".markdown", ".txt", ".rst", ".tex")
 CODE_SUFFIXES = (".c", ".h", ".dts", ".dtsi")
 MAX_CHUNK_CHARS = 1500
-HEADING_RE = re.compile(r"^(#{1,4})\s+(.*)$")
+HEADING_RE = re.compile(r"^(#{1,3})\s+(.*)$")   # 只在 #/##/### 切段；#### 归入所属小节
+MIN_MERGE_CHARS = 200                          # 相邻小段合并阈值，避免章节被切碎
 
 WORD_RE = re.compile(r"[A-Za-z][A-Za-z0-9_\-]{1,}|\d{2,}")
 CJK_RE = re.compile(r"[\u4e00-\u9fff]")
@@ -273,13 +274,18 @@ class KnowledgeBase:
                 # 目录命中：问 kd5886 优先 doc_kd5886-dev/，压过同名 5128 文档
                 elif len(t) >= 4 and t in path_low:
                     score += wt[t] * idf * 2.0
-            # 短语整体命中加分：越长越具体，>=4 字串在正文命中也给足权重
+            # 短语命中加分：长短语拆 3 字滑窗，命中越多越像答案
             for r in q_runs:
-                w = min(len(r) * 0.8, 4.0)
-                if r in c.title:
-                    score += w
-                elif r in c.body:
-                    score += w * (1.0 if len(r) >= 4 else 0.4)
+                if len(r) <= 4:
+                    wins = [r]
+                else:
+                    wins = [r[j:j + 3] for j in range(len(r) - 2)]
+                w = min(len(r) * 0.8, 4.0) / len(wins)
+                for win in wins:
+                    if win in c.title:
+                        score += w
+                    elif win in c.body:
+                        score += w * (1.0 if len(r) >= 4 else 0.4)
             # 过短段（目录式概述）轻惩罚：让带实际内容的长文档段排前。
             # 但短段若含查询里的 ASCII 标识符（readme 含 ddr/uboot），说明就是答案，不罚。
             ascii_toks = [t for t in qt if re.match(r"[a-z0-9]", t) and len(t) >= 3]
@@ -310,13 +316,14 @@ class KnowledgeBase:
                     and nxt not in seen_i):
                 seen_i.add(nxt)
                 order.append(nxt)
-        # ⑤ 来源多样性：同文件最多 PER_SOURCE_CAP 段
+        # ⑤ 来源多样性：同文件最多 max(PER_SOURCE_CAP, k) 段
+        cap = max(PER_SOURCE_CAP, k)
         hits: list[Chunk] = []
         per_source: dict[str, int] = {}
         for i in order:
             c = self._chunks[i]
             cnt = per_source.get(c.source, 0)
-            if cnt >= PER_SOURCE_CAP:
+            if cnt >= cap:
                 continue
             per_source[c.source] = cnt + 1
             hits.append(c)
@@ -357,7 +364,8 @@ class KnowledgeBase:
 
 
 def _split(path: Path, base: Path) -> list[Chunk]:
-    """按标题切段；无标题的文件整体一段。tex 先转轻 markdown 再切。"""
+    """按 #~### 标题切段；更深层级(####)留在所属小节内。
+    不足 MIN_MERGE_CHARS 的小节并入前一段，避免章节被切碎。tex 先转轻 markdown。"""
     source = path.relative_to(base).as_posix()
     try:
         raw = path.read_text(encoding="utf-8", errors="replace")
@@ -371,8 +379,17 @@ def _split(path: Path, base: Path) -> list[Chunk]:
 
     def flush() -> None:
         body = "\n".join(buf).strip()
-        if body:
-            chunks.append(Chunk(source=source, title=title, body=body[:MAX_CHUNK_CHARS]))
+        if not body:
+            return
+        body = body[:MAX_CHUNK_CHARS]
+        if chunks and len(body) < MIN_MERGE_CHARS:
+            prev = chunks[-1]
+            if len(prev.body) + len(body) <= MAX_CHUNK_CHARS:
+                keep = (title + "\n") if title and title != prev.title else ""
+                chunks[-1] = Chunk(prev.source, prev.title,
+                                   prev.body + "\n" + keep + body)
+                return
+        chunks.append(Chunk(source=source, title=title, body=body))
 
     for line in lines:
         m = HEADING_RE.match(line)
