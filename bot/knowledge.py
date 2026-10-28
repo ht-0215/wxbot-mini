@@ -166,6 +166,14 @@ class KnowledgeBase:
             log.warning("知识库后台刷新失败: %s", exc)
 
     def _build(self, stamp: float) -> None:
+        cached = self._load_bm25_cache(stamp)
+        if cached is not None:
+            self._chunks, self._index, self._lens, self._avg_len = cached
+            self._stamp = stamp
+            log.info("BM25 索引缓存命中：%d 段 / %d 词", len(self._chunks), len(self._index))
+            if self.hybrid:
+                self._rebuild_vectors(self._chunks)
+            return
         chunks: list[Chunk] = []
         for p, base, is_code in self._files():
             chunks += _split_code(p, base) if is_code else _split(p, base)
@@ -195,8 +203,50 @@ class KnowledgeBase:
         self._stamp = stamp
         roots = [str(d) for d in self.dirs] + [f"{d}(code)" for d in self.code_dirs]
         log.info("知识库已加载：%d 段 / %d 词（%s）", len(chunks), len(index), ", ".join(roots))
+        self._save_bm25_cache()
         if self.hybrid:
             self._rebuild_vectors(chunks)
+
+    # ── BM25 索引持久化：冷启动免 120s 重建 ───────────────
+    def _cache_key(self) -> str:
+        import hashlib
+        h = hashlib.sha1()
+        for d in list(self.dirs) + list(self.code_dirs):
+            h.update(str(d).encode("utf-8"))
+        return h.hexdigest()[:12]
+
+    def _cache_path(self, stamp: float | None = None) -> Path:
+        s = self._stamp if stamp is None else stamp
+        return ROOT / f".bm25_cache_{self._cache_key()}_{int(s)}.pkl"
+
+    def _load_bm25_cache(self, stamp: float):
+        """同 stamp 的缓存文件命中则返回四元组，否则 None。"""
+        import pickle
+        p = self._cache_path(stamp)
+        if not p.exists():
+            return None
+        try:
+            with p.open("rb") as fh:
+                chunks, index, lens, avg = pickle.load(fh)
+            if len(chunks) != len(lens):
+                return None
+            return chunks, index, lens, avg
+        except Exception as exc:  # noqa: BLE001
+            log.debug("BM25 缓存读取失败: %s", exc)
+            return None
+
+    def _save_bm25_cache(self) -> None:
+        import pickle
+        try:
+            p = self._cache_path()
+            for old in ROOT.glob(f".bm25_cache_{self._cache_key()}_*.pkl"):
+                if old != p:
+                    old.unlink(missing_ok=True)
+            with p.open("wb") as fh:
+                pickle.dump((self._chunks, self._index, self._lens, self._avg_len),
+                            fh, protocol=pickle.HIGHEST_PROTOCOL)
+        except Exception as exc:  # noqa: BLE001
+            log.debug("BM25 缓存写入失败: %s", exc)
 
     def _rebuild_vectors(self, chunks: list[Chunk]) -> None:
         """BM25 重建后同步向量索引：优先读缓存，签名不符才后台编码。
