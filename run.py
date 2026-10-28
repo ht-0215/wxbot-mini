@@ -52,8 +52,11 @@ def check(cfg) -> None:
         print(f"模型连通性 : {reply[:60]}")
 
 
-def handle(cfg, wx, mem, chat: str, text: str, sender: str, kb=None) -> None:
-    """一条完整链路：链接增强 → 记忆/时间/知识库上下文 → LLM → 节流发送（纯文本，DB-only）。"""
+def handle(cfg, wx, mem, chat: str, text: str, sender: str, kb=None) -> str:
+    """一条完整链路：链接增强 → 记忆/时间/知识库上下文 → LLM → 节流发送（纯文本，DB-only）。
+
+    返回实际发出的文本（供主循环登记回声），空串表示未发送。
+    """
     enriched = webpage.enrich(cfg, text)
     question = llm.build_question(cfg, mem, chat, sender, enriched, kb=kb)
     system = router.system_prompt_for(cfg, chat)
@@ -73,6 +76,7 @@ def handle(cfg, wx, mem, chat: str, text: str, sender: str, kb=None) -> None:
         if new_summary:
             mem.rewrite(chat, new_summary, recent[half:])
             log.info("会话 %s 记忆已压缩（%d → %d 条）", chat, len(recent), len(recent[half:]))
+    return body if body else ""
 
 
 def _kb_watchdog(kb, interval: float = 30.0) -> None:
@@ -95,6 +99,7 @@ def run(cfg) -> None:
         kb.reload(force=True)            # 启动即建索引，首问不卡
         threading.Thread(target=_kb_watchdog, args=(kb,), daemon=True).start()
     last_seen: dict[str, str] = {}
+    last_reply: dict[str, str] = {}   # chat → 上一条自己发出的文本，防自回复触发
     pending: dict[str, tuple[str, str, float]] = {}   # chat → (text, sender, deadline)
     log.info("进入轮询循环，Ctrl+C 退出")
     while True:
@@ -109,6 +114,9 @@ def run(cfg) -> None:
             if text == last_seen.get(chat):
                 continue  # 已回过，去重
             last_seen[chat] = text
+            # 摘要若等于自己刚发的回复：是回声不是新提问，跳过防复读循环
+            if text and text == last_reply.get(chat):
+                continue
             if not router.mention_ok(cfg, chat, text):
                 continue  # 群里没 @ 本人：已读不回
             # 合并窗口：窗口期内新消息只刷新快照与截止时间，静默后才回答
@@ -120,7 +128,10 @@ def run(cfg) -> None:
         due = [c for c, (_, _, dl) in pending.items() if dl <= now]
         for chat in due:
             text, sender, _ = pending.pop(chat)
-            handle(cfg, wx, mem, chat, text, sender, kb=kb)
+            reply = handle(cfg, wx, mem, chat, text, sender, kb=kb)
+            if reply:
+                last_reply[chat] = reply
+                last_seen[chat] = reply     # 发完摘要会变成回复文本，预先登记
         time.sleep(cfg.rate.poll_seconds)
 
 

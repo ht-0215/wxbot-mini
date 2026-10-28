@@ -23,7 +23,7 @@ log = logging.getLogger("wxbot.kb")
 ROOT = Path(__file__).resolve().parent.parent
 SUFFIXES = (".md", ".markdown", ".txt", ".rst", ".tex")
 CODE_SUFFIXES = (".c", ".h", ".dts", ".dtsi")
-MAX_CHUNK_CHARS = 900
+MAX_CHUNK_CHARS = 1500
 HEADING_RE = re.compile(r"^(#{1,4})\s+(.*)$")
 
 WORD_RE = re.compile(r"[A-Za-z][A-Za-z0-9_\-]{1,}|\d{2,}")
@@ -43,7 +43,8 @@ def _tex_to_md(text: str) -> str:
         stripped = line.strip()
         if not stripped or stripped.startswith("%%%"):
             continue
-        for n, cmd in ((1, "chapter"), (2, "section"), (3, "subsection")):
+        for n, cmd in ((1, "chapter"), (2, "section"), (3, "subsection"),
+                       (4, "subsubsection"), (4, "paragraph")):
             m = re.match(rf"\\{cmd}\*?\{{(.+?)\}}\s*$", stripped)
             if m:
                 stripped = "#" * n + " " + m.group(1)
@@ -156,10 +157,20 @@ class KnowledgeBase:
 
         index: dict[str, set[int]] = {}
         lens: list[int] = []
+        dir_cache: dict[str, set[str]] = {}     # 目录段 token 按 source 缓存
         for i, c in enumerate(chunks):
             toks = _tokens_of(c.title) | _tokens_of(c.body, limit=4000)
             stem = Path(c.source).stem
             toks |= _tokens_of(stem)              # 文件名可直接搜
+            # 目录段也进索引：doc_kd5886-dev → kd5886，型号查询优先命中对应目录
+            dt = dir_cache.get(c.source)
+            if dt is None:
+                dt = set()
+                for part in Path(c.source).parts[:-1]:
+                    if part != "common":
+                        dt |= _tokens_of(Path(part).stem)
+                dir_cache[c.source] = dt
+            toks |= dt
             lens.append(len(toks))
             for tok in toks:
                 index.setdefault(tok, set()).add(i)
@@ -201,6 +212,7 @@ class KnowledgeBase:
         for i in cand:
             c = self._chunks[i]
             body_low, title_low = c.body.lower(), c.title.lower()
+            path_low = c.source.lower()
             stem_low = Path(c.source).stem.lower()
             score = 0.0
             for t in qt:
@@ -215,6 +227,9 @@ class KnowledgeBase:
                 # 文件名命中：gs8611.c 这类指向性强；短词(spi)只轻加权，防霸屏
                 if t in stem_low:
                     score += wt[t] * idf * (3.0 if len(t) >= 5 else 1.2)
+                # 目录命中：问 kd5886 优先 doc_kd5886-dev/，压过同名 5128 文档
+                elif len(t) >= 4 and t in path_low:
+                    score += wt[t] * idf * 2.0
             # 短语整体命中加分：越长越具体，>=4 字串在正文命中也给足权重
             for r in q_runs:
                 w = min(len(r) * 0.8, 4.0)
@@ -222,6 +237,14 @@ class KnowledgeBase:
                     score += w
                 elif r in c.body:
                     score += w * (1.0 if len(r) >= 4 else 0.4)
+            # 过短段（目录式概述）轻惩罚：让带实际内容的长文档段排前。
+            # 但短段若含查询里的 ASCII 标识符（readme 含 ddr/uboot），说明就是答案，不罚。
+            ascii_toks = [t for t in qt if re.match(r"[a-z0-9]", t) and len(t) >= 3]
+            if len(c.body) < 140:
+                if not any(t in body_low for t in ascii_toks):
+                    score *= 0.6
+            elif len(c.body) >= 400:
+                score *= 1.1
             if score > 0:
                 scored.append((score, c))
         scored.sort(key=lambda pair: pair[0], reverse=True)

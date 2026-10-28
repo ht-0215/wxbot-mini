@@ -242,3 +242,59 @@
 2026-10-28 11:31:21 [wxbot.memory] [DEBUG] [memory.py:78]  记忆已写入 叶子（最近 10 条）
 2026-10-28 11:31:45 [wxbot.wechat] [INFO] [wechat.py:81]  → 叶子: rgmii 口吞吐减半，优先查 **RXCLK 采样沿 / RGMII delay 配置是否正确**
 2026-10-28 11:31:45 [wxbot.memory] [DEBUG] [memory.py:78]  记忆已写入 叶子（最近 11 条）
+2026-10-28 14:27:47 [wechatauto] [DEBUG] [guia.py:290]  WinInput 初始化，屏幕尺寸：2520x1680
+2026-10-28 14:27:47 [wechatauto] [INFO] [guia.py:879]  已加载布局校准（wide）：sidebar_ratio=0.220
+2026-10-28 14:27:47 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=462096, render=396544, rect=(-31987, -32000, -30441, -30528)
+2026-10-28 14:27:49 [wxbot.wechat] [INFO] [wechat.py:43]  已连接微信客户端（后端: wechatauto）
+2026-10-28 14:29:12 [wxbot.kb] [INFO] [knowledge.py:171]  知识库已加载：161588 段 / 211217 词（D:\GitHub\wxbot-mini\knowledge, \\wsl.localhost\Ubuntu-22.04\home\wx\ramfs, \\wsl.localhost\Ubuntu-22.04\opt\kernel\linux-4.9.56-2023-6-2\linux-4.9.56\arch\csky(code), \\wsl.localhost\Ubuntu-22.04\opt\kernel\linux-4.9.56-2023-6-2\linux-4.9.56\arch-csky-drivers(code), \\wsl.localhost\Ubuntu-22.04\opt\kernel\linux-4.9.56-2023-6-2\linux-4.9.56\drivers\net\phy(code), \\wsl.localhost\Ubuntu-22.04\home\wx\dev\wx-sdk\kyland_api-V1.0.6(code), \\wsl.localhost\Ubuntu-22.04\home\wx\dev\wx-sdk\phy(code)）
+2026-10-28 14:29:12 [wxbot] [INFO] [run.py:99]  进入轮询循环，Ctrl+C 退出
+2026-10-28 14:31:23 [wechatauto] [INFO] [accessibility.py:571]  热激活 UIA：PID=6600 Weixin.dll+0xb135c38: 0 -> 1
+2026-10-28 14:31:23 [wechatauto] [INFO] [accessibility.py:579]  UIA 树已物化，已记录 gate RVA：Weixin.dll+0xb135c38
+2026-10-28 14:31:23 [wechatauto] [INFO] [guia.py:1458]  已启用 UIA 驱动（混合路径：UIA 优先，OCR 兜底）
+2026-10-28 14:31:24 [wechatauto] [DEBUG] [uia_driver.py:1012]  聊天页那一片已经渲染，不点导航栏
+2026-10-28 14:31:30 [wxbot.wechat] [INFO] [wechat.py:81]  → 叶子: 进入命令行后，VLAN 创建按“先建 VLAN，再把端口加入 VLAN”处理：
+
+1. 创建 VLA
+2026-10-28 14:31:30 [wxbot.memory] [DEBUG] [memory.py:78]  记忆已写入 叶子（最近 12 条）
+2026-10-28 14:31:49 [wxbot.wechat] [INFO] [wechat.py:81]  → 叶子: 进入命令行后创建 VLAN，按“先创建 VLAN，再把端口加入 VLAN”处理：
+
+1. 创建 VL
+2026-10-28 14:31:49 [wxbot.memory] [DEBUG] [memory.py:78]  记忆已写入 叶子（最近 13 条）
+2026-10-28 14:32:11 [wxbot.wechat] [INFO] [wechat.py:81]  → 叶子: 进入命令行后，VLAN 创建按“先创建 VLAN，再把端口加入 VLAN”处理。
+
+1. 创建 VL
+2026-10-28 14:32:11 [wxbot.memory] [DEBUG] [memory.py:78]  记忆已写入 叶子（最近 14 条）
+2026-10-28 14:33:44 [wxbot.wechat] [INFO] [wechat.py:81]  → 叶子: 用命令行下发时，按两步处理：
+
+1. 进入命令行界面，执行 **VLAN 配置命令**，先创建目标 
+2026-10-28 14:33:44 [wxbot.memory] [DEBUG] [memory.py:78]  记忆已写入 叶子（最近 15 条）
+2026-10-28 14:34:13 [wxbot.wechat] [INFO] [wechat.py:81]  → 叶子: 用命令行下发，按 **先创建 VLAN，再配置成员端口** 两步处理。
+
+以创建 **VLAN 10
+2026-10-28 14:34:13 [wxbot.memory] [DEBUG] [memory.py:78]  记忆已写入 叶子（最近 16 条）
+2026-10-28 15:29:09 [wechatauto] [DEBUG] [guia.py:290]  WinInput 初始化，屏幕尺寸：2520x1680
+2026-10-28 15:29:09 [wechatauto] [INFO] [guia.py:872]  布局配置与当前窗口尺寸差异过大，忽略并重新校准（wide 校准=1546 vs 当前=2128）
+2026-10-28 15:29:11 [PIL.Image] [DEBUG] [Image.py:421]  Importing PngImagePlugin
+2026-10-28 15:29:13 [wechatauto] [INFO] [guia.py:790]  布局校准完成（wide）：sidebar_ratio=0.289, send_button_ratio=[0.78, 0.92, 0.995, 0.99]
+2026-10-28 15:29:13 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=462096, render=396544, rect=(62, 124, 2190, 1374)
+2026-10-28 15:29:14 [wxbot.wechat] [INFO] [wechat.py:43]  已连接微信客户端（后端: wechatauto）
+2026-10-28 15:30:17 [wxbot.kb] [INFO] [knowledge.py:171]  知识库已加载：161588 段 / 211217 词（D:\GitHub\wxbot-mini\knowledge, \\wsl.localhost\Ubuntu-22.04\home\wx\ramfs, \\wsl.localhost\Ubuntu-22.04\opt\kernel\linux-4.9.56-2023-6-2\linux-4.9.56\arch\csky(code), \\wsl.localhost\Ubuntu-22.04\opt\kernel\linux-4.9.56-2023-6-2\linux-4.9.56\arch-csky-drivers(code), \\wsl.localhost\Ubuntu-22.04\opt\kernel\linux-4.9.56-2023-6-2\linux-4.9.56\drivers\net\phy(code), \\wsl.localhost\Ubuntu-22.04\home\wx\dev\wx-sdk\kyland_api-V1.0.6(code), \\wsl.localhost\Ubuntu-22.04\home\wx\dev\wx-sdk\phy(code)）
+2026-10-28 15:30:17 [wxbot] [INFO] [run.py:99]  进入轮询循环，Ctrl+C 退出
+2026-10-28 15:32:48 [wechatauto] [INFO] [guia.py:1458]  已启用 UIA 驱动（混合路径：UIA 优先，OCR 兜底）
+2026-10-28 15:32:48 [wechatauto] [DEBUG] [uia_driver.py:1012]  聊天页那一片已经渲染，不点导航栏
+2026-10-28 15:32:54 [wxbot.wechat] [INFO] [wechat.py:81]  → 叶子: KD5886 用命令配置 VLAN，一般按这三步：
+
+1. **创建 VLAN**
+```text
+
+2026-10-28 15:32:54 [wxbot.memory] [DEBUG] [memory.py:78]  记忆已写入 叶子（最近 17 条）
+2026-10-28 15:33:12 [wxbot.wechat] [INFO] [wechat.py:81]  → 叶子: KD5886 命令行配置 VLAN，按下面两步执行：
+
+1. **创建 VLAN**
+```text
+2026-10-28 15:33:12 [wxbot.memory] [DEBUG] [memory.py:78]  记忆已写入 叶子（最近 18 条）
+2026-10-28 15:33:30 [wxbot.wechat] [INFO] [wechat.py:81]  → 叶子: KD5886 命令行配置 VLAN 可按下面方式执行：
+
+1. **创建 VLAN**
+```tex
+2026-10-28 15:33:30 [wxbot.memory] [DEBUG] [memory.py:78]  记忆已写入 叶子（最近 19 条）
