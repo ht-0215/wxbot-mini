@@ -198,7 +198,8 @@ class KnowledgeBase:
                 self._vec = VectorIndex()
             keys = [f"{c.source}#{i}" for i, c in enumerate(chunks)]
             if self._vec.load_cache(keys):
-                return
+                threading.Thread(target=self._vec._ensure_model, daemon=True).start()
+                return                      # 后台预热模型，首问不再等加载
             rows, texts = [], []
             for i, c in enumerate(chunks):
                 if c.source.lower().endswith((".c", ".h", ".dts", ".dtsi")):
