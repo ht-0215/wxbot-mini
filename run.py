@@ -19,7 +19,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from bot import config as cfg_mod
-from bot import emotion, knowledge as kb_mod, llm, memory as mem_mod, router, webpage
+from bot import commands, emotion, knowledge as kb_mod, llm, memory as mem_mod, router, webpage
 
 log = logging.getLogger("wxbot")
 
@@ -58,6 +58,12 @@ def handle(cfg, wx, mem, chat: str, text: str, sender: str, kb=None) -> str:
 
     返回实际发出的文本（供主循环登记回声），空串表示未发送。
     """
+    cmd_reply = commands.dispatch(cfg, mem, kb, chat, text)
+    if cmd_reply is not None:
+        lo0, hi0 = cfg.rate.send_interval
+        time.sleep(random.uniform(lo0, hi0))
+        wx.send(chat, cmd_reply)
+        return cmd_reply
     enriched = webpage.enrich(cfg, text)
     question = llm.build_question(cfg, mem, chat, sender, enriched, kb=kb)
     system = router.system_prompt_for(cfg, chat)

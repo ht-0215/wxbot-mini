@@ -71,6 +71,12 @@ class SessionMemory:
     def rewrite(self, chat: str, summary: str, recent: list[str]) -> None:
         self._write(chat, summary, recent)
 
+    def clear(self, chat: str) -> None:
+        p = self._path(chat)
+        if p.exists():
+            p.unlink()
+            log.info("已清空会话记忆: %s", chat)
+
     def _write(self, chat: str, summary: str, recent: list[str]) -> None:
         lines = [f"# {chat}", "", "## 摘要", summary or "（暂无）", "", "## 最近"]
         lines += [f"- {r}" for r in recent]

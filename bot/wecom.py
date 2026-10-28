@@ -113,9 +113,12 @@ class BotService:
         return reply
 
     def _answer_text(self, inc: Incoming, text: str) -> str:
-        from bot import llm, router
+        from bot import commands, llm, router
 
         chat = inc.name or inc.userid or "wecom"
+        cmd = commands.dispatch(self.cfg, self.mem, self.kb, chat, text)
+        if cmd is not None:
+            return cmd
         question = llm.build_question(self.cfg, self.mem, chat, inc.name, text, kb=self.kb)
         system = router.system_prompt_for(self.cfg, chat)
         reply = llm.ask(self.cfg, system, question)
