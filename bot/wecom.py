@@ -86,13 +86,21 @@ class BotService:
     """把回调与推理层粘合：问 → (知识库+记忆+LLM) → 答。"""
 
     def __init__(self, cfg, kb, mem, answer_fn=None) -> None:
+        from bot.scheduler import Scheduler
+
         self.cfg = cfg
         self.kb = kb
         self.mem = mem
         self._answer = answer_fn
-        self._cache: dict[str, tuple[float, str]] = {}   # userid → (ts, 上次回答)
+        self.sched = Scheduler(send=self._queue_push)
+        self._pending: dict[str, list[str]] = {}        # chat → 到期待推文本
+        self._cache: dict[str, tuple[float, str]] = {}   # userid → (ts, 上次消息)
         self._cache_ttl = 120.0
         self.stats = {"recv": 0, "reply": 0, "dup": 0, "err": 0}
+
+    def _queue_push(self, chat: str, text: str) -> None:
+        """HTTP 回调无法异步推送：到期文本排队，随该用户下一条请求一起回。"""
+        self._pending.setdefault(chat, []).append(text)
 
     def handle_text(self, inc: Incoming) -> str:
         self.stats["recv"] += 1
@@ -110,6 +118,12 @@ class BotService:
             reply = f"（服务暂时不可用：{exc.__class__.__name__}）"
         self._cache[inc.userid] = (now, text)
         self.stats["reply"] += 1
+        chat_key = inc.name or inc.userid or "wecom"
+        queued = self._pending.pop(chat_key, [])
+        if queued and reply:
+            reply += "\n\n" + "\n".join(queued)
+        elif queued:
+            reply = "\n".join(queued)
         return reply
 
     def _answer_text(self, inc: Incoming, text: str) -> str:
@@ -119,6 +133,9 @@ class BotService:
         cmd = commands.dispatch(self.cfg, self.mem, self.kb, chat, text)
         if cmd is not None:
             return cmd
+        note = self.sched.add(chat, text)
+        if note is not None:
+            return note
         question = llm.build_question(self.cfg, self.mem, chat, inc.name, text, kb=self.kb)
         system = router.system_prompt_for(self.cfg, chat)
         reply = llm.ask(self.cfg, system, question)

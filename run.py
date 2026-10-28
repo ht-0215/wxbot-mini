@@ -53,8 +53,8 @@ def check(cfg) -> None:
         print(f"模型连通性 : {reply[:60]}")
 
 
-def handle(cfg, wx, mem, chat: str, text: str, sender: str, kb=None) -> str:
-    """一条完整链路：链接增强 → 记忆/时间/知识库上下文 → LLM → 节流发送（纯文本，DB-only）。
+def handle(cfg, wx, mem, chat: str, text: str, sender: str, kb=None, sched=None) -> str:
+    """一条完整链路：指令/提醒 → 链接增强 → 记忆/时间/知识库上下文 → LLM → 节流发送。
 
     返回实际发出的文本（供主循环登记回声），空串表示未发送。
     """
@@ -64,6 +64,12 @@ def handle(cfg, wx, mem, chat: str, text: str, sender: str, kb=None) -> str:
         time.sleep(random.uniform(lo0, hi0))
         wx.send(chat, cmd_reply)
         return cmd_reply
+    if sched is not None:
+        note = sched.add(chat, text)
+        if note is not None:
+            time.sleep(random.uniform(*cfg.rate.send_interval))
+            wx.send(chat, note)
+            return note
     enriched = webpage.enrich(cfg, text)
     question = llm.build_question(cfg, mem, chat, sender, enriched, kb=kb)
     system = router.system_prompt_for(cfg, chat)
@@ -98,9 +104,12 @@ def _kb_watchdog(kb, interval: float = 30.0) -> None:
 
 def run(cfg) -> None:
     from bot.wechat import WeChat  # 延迟导入：--check 不需要 wxauto
+    from bot.scheduler import Scheduler
 
     wx = WeChat(hwnd=cfg.window.hwnd or None, title=cfg.window.title or None)
     mem = mem_mod.SessionMemory(cfg)
+    sched = Scheduler(send=wx.send)
+    threading.Thread(target=sched.run_forever, kwargs={"interval": 5.0}, daemon=True).start()
     kb = make_kb(cfg) if cfg.knowledge.enabled else None
     if kb:
         kb.reload(force=True)            # 启动即建索引，首问不卡
@@ -135,7 +144,7 @@ def run(cfg) -> None:
         due = [c for c, (_, _, dl) in pending.items() if dl <= now]
         for chat in due:
             text, sender, _ = pending.pop(chat)
-            reply = handle(cfg, wx, mem, chat, text, sender, kb=kb)
+            reply = handle(cfg, wx, mem, chat, text, sender, kb=kb, sched=sched)
             if reply:
                 last_reply[chat] = reply
                 last_seen[chat] = reply     # 发完摘要会变成回复文本，预先登记
@@ -152,6 +161,8 @@ def serve(cfg) -> None:
         kb.reload(force=True)
         threading.Thread(target=_kb_watchdog, args=(kb,), daemon=True).start()
     service = BotService(cfg, kb, mem)
+    threading.Thread(target=service.sched.run_forever, kwargs={"interval": 5.0},
+                     daemon=True).start()     # 到期提醒入队，随下次请求带出
 
     token = cfg.wecom.token
 
