@@ -33,7 +33,11 @@ python run.py
 | 会话记忆 | `memory.*` | 每会话一个 md：最近 N 条进上下文，超过 `summarize_after` 自动摘要压缩 |
 | 情绪表情包 | `emotions` / `emotion_mode` | 默认关；hybrid 只查 `stickers/` 本地库秒发，冷词离峰 `--warm` 建库 |
 | 知识库检索 | `knowledge.*` | 见下节，FAE 技术支持核心 |
-| 节流合并 | `rate.*` | 轮询间隔 + 发送前随机间隔，降低风控风险 |
+| 节流合并 | `rate.*` | 轮询间隔 + 发送前随机间隔 + 合并窗口静默，降低风控风险 |
+| 群内 @过滤 | `at_names` | 群消息含 @这些名字才回复；单聊不受限 |
+| 本地指令 | `/状态` `/清空记忆 <会话>` `/帮助` | `/` 开头不送模型秒回；轮询与企微回调共用 |
+| 定时提醒 | 自然语言 | "15分钟后提醒我拿快递"/"每天早上八点叫我起床"，到期发回原会话 |
+| 窗口绑定 | `window.hwnd/title` | 双开微信固定 bot 窗口；`python run.py --wins` 列出候选 |
 
 `llm.engine` 两档：`api` 直调 wx_40b 网关；`dsh` 走 `dsh headless`，
 复用 DSH 的 skill / 工具能力（如串口调试、office 文档类技能）。
