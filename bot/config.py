@@ -55,6 +55,14 @@ class KnowledgeCfg:
 
 
 @dataclass
+class WecomCfg:
+    """企业微信智能机器人回调服务（--serve）。"""
+    host: str = "0.0.0.0"
+    port: int = 8090
+    token: str = ""                 # 管理后台回调配置的 Token，留空则跳过签名校验
+
+
+@dataclass
 class MemoryCfg:
     enabled: bool = True
     dir: str = "memory"
@@ -71,6 +79,7 @@ class Config:
     features: FeatureCfg = field(default_factory=FeatureCfg)
     memory: MemoryCfg = field(default_factory=MemoryCfg)
     knowledge: KnowledgeCfg = field(default_factory=KnowledgeCfg)
+    wecom: WecomCfg = field(default_factory=WecomCfg)
     prompts: Dict[str, str] = field(default_factory=dict)
     routes: Dict[str, str] = field(default_factory=dict)
     listen: List[str] = field(default_factory=list)
@@ -89,6 +98,7 @@ def load(path: Path | None = None) -> Config:
     feat_d = raw.get("features") or {}
     mem_d = raw.get("memory") or {}
     kb_d = raw.get("knowledge") or {}
+    wc_d = raw.get("wecom") or {}
 
     return Config(
         engine=str(llm.get("engine", "api")),
@@ -122,6 +132,11 @@ def load(path: Path | None = None) -> Config:
             extra_dirs=[str(x) for x in (kb_d.get("extra_dirs") or [])],
             code_dirs=[str(x) for x in (kb_d.get("code_dirs") or [])],
             top_k=int(kb_d.get("top_k", 3)),
+        ),
+        wecom=WecomCfg(
+            host=str(wc_d.get("host", "0.0.0.0")),
+            port=int(wc_d.get("port", 8090)),
+            token=str(wc_d.get("token", "")),
         ),
         prompts=dict(raw.get("prompts") or {}),
         routes=dict(raw.get("routes") or {}),

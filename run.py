@@ -1,18 +1,22 @@
 """wxbot-mini：微信 → 大模型自动回复。
 
 用法：
-    python run.py            # 正式运行（需 PC 微信已登录）
+    python run.py            # 轮询模式：接管 PC 微信客户端（需微信已登录）
+    python run.py --serve    # HTTP 服务：企业微信智能机器人回调（推荐）
     python run.py --check    # 只做配置与依赖自检，不碰微信
 """
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 import logging.handlers
 import random
 import threading
 import time
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
 
 from bot import config as cfg_mod
 from bot import emotion, knowledge as kb_mod, llm, memory as mem_mod, router, webpage
@@ -131,6 +135,65 @@ def run(cfg) -> None:
         time.sleep(cfg.rate.poll_seconds)
 
 
+# ── 企业微信智能机器人回调服务 ──────────────────────────
+def serve(cfg) -> None:
+    from bot.wecom import BotService, build_reply, check_signature, parse_message
+
+    mem = mem_mod.SessionMemory(cfg)
+    kb = make_kb(cfg) if cfg.knowledge.enabled else None
+    if kb:
+        kb.reload(force=True)
+        threading.Thread(target=_kb_watchdog, args=(kb,), daemon=True).start()
+    service = BotService(cfg, kb, mem)
+
+    token = cfg.wecom.token
+
+    class Handler(BaseHTTPRequestHandler):
+        def _send(self, code: int, body: str) -> None:
+            data = body.encode("utf-8")
+            self.send_response(code)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+
+        def do_GET(self):                      # URL 验证
+            qs = parse_qs(urlparse(self.path).query)
+            sig = qs.get("signature", [""])[0]
+            ts = qs.get("timestamp", [""])[0]
+            nonce = qs.get("nonce", [""])[0]
+            echo = qs.get("echostr", [""])[0]
+            if check_signature(token, ts, nonce, echo, sig):
+                log.info("URL 验证通过")
+                self._send(200, echo)          # 明文回显
+            else:
+                log.warning("URL 验证失败")
+                self._send(403, "forbidden")
+
+        def do_POST(self):                     # 消息回调
+            length = int(self.headers.get("Content-Length") or 0)
+            raw = self.rfile.read(length).decode("utf-8", "replace") if length else ""
+            inc = parse_message(raw)
+            if inc is None or not inc.text:
+                self._send(200, '{"msgtype":"empty"}')
+                return
+            reply = service.handle_text(inc)
+            body = build_reply(reply) if reply else '{"msgtype":"empty"}'
+            self._send(200, body)
+            log.info("[%s] %s → %s", inc.name or inc.userid, inc.text[:30], (reply or "(dup)")[:50])
+
+        def log_message(self, fmt, *args):     # 静音默认 access log
+            log.debug(fmt, *args)
+
+    host, port = cfg.wecom.host, cfg.wecom.port
+    httpd = ThreadingHTTPServer((host, port), Handler)
+    log.info("企业微信回调服务已启动 http://%s:%d/  stats=%s", host, port, service.stats)
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        httpd.shutdown()
+
+
 def warm(cfg, keywords: list[str]) -> None:
     """离峰建库：逐个关键词走面板搜索，把结果存进 stickers/。"""
     from bot.wechat import WeChat
@@ -164,6 +227,7 @@ def setup_logging() -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="wxbot-mini")
     parser.add_argument("--check", action="store_true", help="只做配置与连通性自检")
+    parser.add_argument("--serve", action="store_true", help="企业微信智能机器人 HTTP 回调服务")
     parser.add_argument("--warm", nargs="*", metavar="关键词", help="离峰批量建表情库，如 --warm 加油 晚安")
     args = parser.parse_args()
 
@@ -175,6 +239,9 @@ def main() -> None:
     if args.warm is not None:
         kws = args.warm or ["开心", "收到", "加油"]
         warm(cfg, kws)
+        return
+    if args.serve:
+        serve(cfg)
         return
     try:
         run(cfg)
