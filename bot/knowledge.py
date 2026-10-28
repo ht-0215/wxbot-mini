@@ -30,7 +30,7 @@ HEADING_RE = re.compile(r"^(#{1,4})\s+(.*)$")
 WORD_RE = re.compile(r"[A-Za-z][A-Za-z0-9_\-]{1,}|\d{2,}")
 CJK_RE = re.compile(r"[\u4e00-\u9fff]")
 CAND_CAP = 3000            # 精算候选上限
-PER_SOURCE_CAP = 2         # 同一文件最多贡献段数
+PER_SOURCE_CAP = 4         # 同一文件最多贡献段数；与 top_k 对齐，一章答透胜过三段散片
 RELOAD_TTL = 300.0         # UNC mtime 检查节流（秒）
 
 # BM25 参数（经验值，与 rank_bm25 默认一致）
@@ -72,15 +72,26 @@ def _cjk_runs(text: str) -> list[str]:
     return runs
 
 
+# 中文口语 → 文档英文写法：查询侧扩展，弥合中英术语差
+ALIAS = {
+    "波特率": ["baudrate"], "串口": ["uart"], "自协商": ["auto_negotiate"],
+    "千兆": ["1000"], "百兆": ["100"], "烧写": ["burn", "flash"],
+    "组播": ["multicast", "mc"], "镜像": ["image"], "带宽": ["bw"],
+    "吞吐量": ["throughput"], "端口": ["port"], "寄存器": ["reg"],
+}
+
+
 def _tokens_of(text: str, *, limit: int = 0) -> set[str]:
-    """英文/数字 token + 子词 + 中文 2-gram（正文只取前 limit 字防爆炸）。"""
+    """英文/数字 token + 子词 + 中文 2-gram + 别名扩展（正文只取前 limit 字防爆炸）。"""
     toks: set[str] = {t.lower() for t in WORD_RE.findall(text)}
     for t in list(toks):
         toks |= _subtokens(t)
-    if limit:
-        text = text[:limit]
-    cjk = "".join(CJK_RE.findall(text))
+    body = text if not limit else text[:limit]
+    cjk = "".join(CJK_RE.findall(body))
     toks |= {cjk[j:j + 2] for j in range(len(cjk) - 1)}
+    for zh, ens in ALIAS.items():
+        if zh in text:
+            toks |= {e.lower() for e in ens}
     return toks
 
 
@@ -205,7 +216,7 @@ class KnowledgeBase:
                 if c.source.lower().endswith((".c", ".h", ".dts", ".dtsi")):
                     continue
                 rows.append(i)
-                texts.append(c.title + "。" + c.body[:300])
+                texts.append(c.title + "。" + c.body[:600])
             th = threading.Thread(target=self._vec.build, args=(keys, texts, rows), daemon=True)
             th.start()          # 编码耗时放在后台，不阻塞启动
         except Exception as exc:  # noqa: BLE001
@@ -277,15 +288,32 @@ class KnowledgeBase:
                     score *= 0.6
             elif len(c.body) >= 400:
                 score *= 1.1
+            # 中文问句优先文档段：代码碎片(数组定义等)常撞标识符但非答案
+            if q_runs and c.source.lower().endswith((".md", ".tex", ".txt", ".rst")):
+                score *= 1.25
             if score > 0:
                 scored.append((score, i))
         scored.sort(key=lambda pair: pair[0], reverse=True)
         # ③ 混合重排：BM25 名次 + 向量余弦，两路互为兜底
         merged = self._hybrid_merge(scored, question)
-        # ④ 来源多样性：同文件最多 PER_SOURCE_CAP 段
+        # ④ 邻段续接：命中的段之后紧跟同文档下一段——章节细节常写在下一小节
+        order: list[int] = []
+        seen_i: set[int] = set()
+        for i in merged:
+            if i in seen_i:
+                continue
+            seen_i.add(i)
+            order.append(i)
+            nxt = i + 1
+            if (nxt < len(self._chunks)
+                    and self._chunks[nxt].source == self._chunks[i].source
+                    and nxt not in seen_i):
+                seen_i.add(nxt)
+                order.append(nxt)
+        # ⑤ 来源多样性：同文件最多 PER_SOURCE_CAP 段
         hits: list[Chunk] = []
         per_source: dict[str, int] = {}
-        for i in merged:
+        for i in order:
             c = self._chunks[i]
             cnt = per_source.get(c.source, 0)
             if cnt >= PER_SOURCE_CAP:
