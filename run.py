@@ -109,6 +109,8 @@ def run(cfg) -> None:
             if text == last_seen.get(chat):
                 continue  # 已回过，去重
             last_seen[chat] = text
+            if not router.mention_ok(cfg, chat, text):
+                continue  # 群里没 @ 本人：已读不回
             # 合并窗口：窗口期内新消息只刷新快照与截止时间，静默后才回答
             sender = msgs[-1].sender
             prev = pending.get(chat)

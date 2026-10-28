@@ -20,3 +20,16 @@ def should_listen(cfg: Config, chat_name: str) -> bool:
     if not cfg.listen:
         return True
     return any(name in chat_name or chat_name in name for name in cfg.listen)
+
+
+def is_group(cfg: Config, chat_name: str) -> bool:
+    """在 routes 里配了专属 prompt 的会话按群处理（需要 @ 才回复）。"""
+    return any(k and (k in chat_name or chat_name in k) for k in cfg.routes)
+
+
+def mention_ok(cfg: Config, chat_name: str, text: str) -> bool:
+    """群消息过滤：at_names 为空 = 全部回复；否则文本需含 '@名字' 或裸名字。"""
+    names = getattr(cfg, "at_names", []) or []
+    if not names or not is_group(cfg, chat_name):
+        return True
+    return any(n in text for n in names)

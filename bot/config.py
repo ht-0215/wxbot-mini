@@ -83,6 +83,7 @@ class Config:
     prompts: Dict[str, str] = field(default_factory=dict)
     routes: Dict[str, str] = field(default_factory=dict)
     listen: List[str] = field(default_factory=list)
+    at_names: List[str] = field(default_factory=list)   # 群内需 @ 这些名字才回复
 
 
 def load(path: Path | None = None) -> Config:
@@ -141,4 +142,5 @@ def load(path: Path | None = None) -> Config:
         prompts=dict(raw.get("prompts") or {}),
         routes=dict(raw.get("routes") or {}),
         listen=list(raw.get("listen") or []),
+        at_names=list(raw.get("at_names") or []),
     )

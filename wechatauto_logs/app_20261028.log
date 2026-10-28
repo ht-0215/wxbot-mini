@@ -221,3 +221,24 @@
 2026-10-28 11:26:30 [wechatauto] [INFO] [guia.py:879]  已加载布局校准（portrait）：sidebar_ratio=1.000
 2026-10-28 11:26:30 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=2756176, render=6098890, rect=(723, 94, 1895, 1606)
 2026-10-28 11:26:32 [wxbot.wechat] [INFO] [wechat.py:43]  已连接微信客户端（后端: wechatauto）
+2026-10-28 11:29:08 [wechatauto] [DEBUG] [guia.py:290]  WinInput 初始化，屏幕尺寸：2520x1680
+2026-10-28 11:29:08 [wechatauto] [INFO] [guia.py:872]  布局配置与当前窗口尺寸差异过大，忽略并重新校准（wide 校准=1390 vs 当前=1920）
+2026-10-28 11:29:12 [PIL.Image] [DEBUG] [Image.py:421]  Importing PngImagePlugin
+2026-10-28 11:29:15 [wechatauto] [INFO] [guia.py:790]  布局校准完成（wide）：sidebar_ratio=0.220, send_button_ratio=[0.9171875, 0.9334239130434783, 0.9703125, 0.9762228260869565]
+2026-10-28 11:29:15 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=1511490, render=7606176, rect=(5, 36, 1925, 1508)
+2026-10-28 11:29:16 [wxbot.wechat] [INFO] [wechat.py:43]  已连接微信客户端（后端: wechatauto）
+2026-10-28 11:29:56 [wechatauto] [DEBUG] [guia.py:290]  WinInput 初始化，屏幕尺寸：2520x1680
+2026-10-28 11:29:56 [wechatauto] [INFO] [guia.py:872]  布局配置与当前窗口尺寸差异过大，忽略并重新校准（wide 校准=1920 vs 当前=1546）
+2026-10-28 11:30:00 [PIL.Image] [DEBUG] [Image.py:421]  Importing PngImagePlugin
+2026-10-28 11:30:02 [wechatauto] [INFO] [guia.py:790]  布局校准完成（wide）：sidebar_ratio=0.220, send_button_ratio=[0.8971539456662354, 0.9334239130434783, 0.963130659767141, 0.9762228260869565]
+2026-10-28 11:30:02 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=1511490, render=7606176, rect=(-12, 36, 1534, 1508)
+2026-10-28 11:30:04 [wxbot.wechat] [INFO] [wechat.py:43]  已连接微信客户端（后端: wechatauto）
+2026-10-28 11:30:35 [wxbot.kb] [INFO] [knowledge.py:171]  知识库已加载：161588 段 / 211217 词（D:\GitHub\wxbot-mini\knowledge, \\wsl.localhost\Ubuntu-22.04\home\wx\ramfs, \\wsl.localhost\Ubuntu-22.04\opt\kernel\linux-4.9.56-2023-6-2\linux-4.9.56\arch\csky(code), \\wsl.localhost\Ubuntu-22.04\opt\kernel\linux-4.9.56-2023-6-2\linux-4.9.56\arch-csky-drivers(code), \\wsl.localhost\Ubuntu-22.04\opt\kernel\linux-4.9.56-2023-6-2\linux-4.9.56\drivers\net\phy(code), \\wsl.localhost\Ubuntu-22.04\home\wx\dev\wx-sdk\kyland_api-V1.0.6(code), \\wsl.localhost\Ubuntu-22.04\home\wx\dev\wx-sdk\phy(code)）
+2026-10-28 11:30:35 [wxbot] [INFO] [run.py:99]  进入轮询循环，Ctrl+C 退出
+2026-10-28 11:31:19 [wechatauto] [INFO] [guia.py:1458]  已启用 UIA 驱动（混合路径：UIA 优先，OCR 兜底）
+2026-10-28 11:31:21 [wxbot.wechat] [INFO] [wechat.py:81]  → 叶子: rgmii 吞吐减半，一般优先查 **RXCLK 采样沿 / delay 配置是否正确**。
+
+可执
+2026-10-28 11:31:21 [wxbot.memory] [DEBUG] [memory.py:78]  记忆已写入 叶子（最近 10 条）
+2026-10-28 11:31:45 [wxbot.wechat] [INFO] [wechat.py:81]  → 叶子: rgmii 口吞吐减半，优先查 **RXCLK 采样沿 / RGMII delay 配置是否正确**
+2026-10-28 11:31:45 [wxbot.memory] [DEBUG] [memory.py:78]  记忆已写入 叶子（最近 11 条）
