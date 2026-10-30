@@ -7,3 +7,48 @@
 2026-10-29 00:31:37 [wechatauto] [INFO] [guia.py:879]  已加载布局校准（wide）：sidebar_ratio=0.289
 2026-10-29 00:31:37 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=462096, render=462080, rect=(-31987, -32000, -29859, -30750)
 2026-10-29 00:31:38 [wxbot.wechat] [INFO] [wechat.py:64]  已连接微信客户端（后端: wechatauto，窗口: 默认）
+2026-10-29 11:41:08 [wechatauto] [DEBUG] [guia.py:290]  WinInput 初始化，屏幕尺寸：2520x1680
+2026-10-29 11:41:08 [wechatauto] [INFO] [guia.py:879]  已加载布局校准（wide）：sidebar_ratio=0.289
+2026-10-29 11:41:08 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=462096, render=462080, rect=(-31987, -32000, -29859, -30750)
+2026-10-29 11:41:11 [wxbot.wechat] [INFO] [wechat.py:83]  已连接微信客户端（后端: wechatauto，窗口: 默认）
+2026-10-29 11:41:42 [wxbot.kb] [INFO] [knowledge.py:173]  BM25 索引缓存命中：162096 段 / 225913 词
+2026-10-29 11:41:44 [wxbot.vec] [INFO] [vector.py:108]  向量缓存命中：162096 段
+2026-10-29 11:41:44 [wxbot] [INFO] [run.py:136]  进入轮询循环，Ctrl+C 退出
+2026-10-29 11:42:34 [sentence_transformers.base.model] [INFO] [model.py:214]  No device provided, using cpu
+2026-10-29 11:42:34 [huggingface_hub.hf_api] [WARNING] [hf_api.py:3662]  Could not reach the Hub (Cannot reach https://hf-mirror.com/api/models/BAAI/bge-small-zh-v1.5: offline mode is enabled. To disable it, please unset the `HF_HUB_OFFLINE` environment variable.). Using cached commit hash for 'BAAI/bge-small-zh-v1.5'.
+2026-10-29 11:42:34 [sentence_transformers.base.model] [INFO] [model.py:1210]  Loading SentenceTransformer model from BAAI/bge-small-zh-v1.5.
+2026-10-29 11:42:34 [sentence_transformers.base.modules.transformer] [DEBUG] [transformer.py:942]  Active modality config: {'text': {'method': 'forward', 'method_output_name': 'last_hidden_state'}}
+2026-10-29 11:42:34 [sentence_transformers.util.file_io] [DEBUG] [file_io.py:221]  Could not load 'config.json' from 'BAAI/bge-small-zh-v1.5': An error happened while trying to locate the file on the Hub and we cannot find the requested files in the local cache. Please check your connection and try again or make sure your Internet connection is on.
+2026-10-29 11:42:34 [wxbot.vec] [INFO] [vector.py:58]  嵌入模型已加载: BAAI/bge-small-zh-v1.5
+2026-10-29 12:17:07 [wxbot.llm] [WARNING] [llm.py:94]  LLM 调用失败: HTTP Error 500: Internal Server Error
+2026-10-29 12:17:10 [wechatauto] [INFO] [guia.py:1458]  已启用 UIA 驱动（混合路径：UIA 优先，OCR 兜底）
+2026-10-29 12:17:11 [wechatauto] [DEBUG] [uia_driver.py:1012]  聊天页那一片已经渲染，不点导航栏
+2026-10-29 12:17:17 [wxbot.wechat] [INFO] [wechat.py:127]  → 叶子: （稍后回复你，刚才接口超时：HTTPError）
+2026-10-29 12:17:17 [wxbot.memory] [DEBUG] [memory.py:84]  记忆已写入 叶子（最近 20 条）
+2026-10-29 13:42:20 [wxbot.llm] [INFO] [llm.py:91]  模型返回为空，重试一次
+2026-10-29 13:42:28 [wechatauto] [DEBUG] [uia_driver.py:1012]  聊天页那一片已经渲染，不点导航栏
+2026-10-29 13:42:34 [wxbot.wechat] [INFO] [wechat.py:127]  → 叶子: （模型返回为空）
+2026-10-29 13:42:34 [wxbot.memory] [DEBUG] [memory.py:84]  记忆已写入 叶子（最近 21 条）
+2026-10-29 13:43:18 [wechatauto] [DEBUG] [guia.py:290]  WinInput 初始化，屏幕尺寸：2520x1680
+2026-10-29 13:43:18 [wechatauto] [INFO] [guia.py:879]  已加载布局校准（wide）：sidebar_ratio=0.289
+2026-10-29 13:43:18 [wechatauto] [INFO] [guia.py:495]  WeChatGUI 初始化成功：hwnd=462096, render=462080, rect=(136, 78, 2264, 1328)
+2026-10-29 13:43:19 [wxbot.wechat] [INFO] [wechat.py:83]  已连接微信客户端（后端: wechatauto，窗口: 默认）
+2026-10-29 13:43:53 [wxbot.kb] [INFO] [knowledge.py:173]  BM25 索引缓存命中：162096 段 / 225913 词
+2026-10-29 13:43:53 [wxbot.vec] [INFO] [vector.py:108]  向量缓存命中：162096 段
+2026-10-29 13:43:53 [wxbot] [INFO] [run.py:136]  进入轮询循环，Ctrl+C 退出
+2026-10-29 13:44:05 [sentence_transformers.base.model] [INFO] [model.py:214]  No device provided, using cpu
+2026-10-29 13:44:05 [sentence_transformers.base.model] [INFO] [model.py:214]  No device provided, using cpu
+2026-10-29 13:44:05 [huggingface_hub.hf_api] [WARNING] [hf_api.py:3662]  Could not reach the Hub (Cannot reach https://hf-mirror.com/api/models/BAAI/bge-small-zh-v1.5: offline mode is enabled. To disable it, please unset the `HF_HUB_OFFLINE` environment variable.). Using cached commit hash for 'BAAI/bge-small-zh-v1.5'.
+2026-10-29 13:44:05 [huggingface_hub.hf_api] [WARNING] [hf_api.py:3662]  Could not reach the Hub (Cannot reach https://hf-mirror.com/api/models/BAAI/bge-small-zh-v1.5: offline mode is enabled. To disable it, please unset the `HF_HUB_OFFLINE` environment variable.). Using cached commit hash for 'BAAI/bge-small-zh-v1.5'.
+2026-10-29 13:44:05 [sentence_transformers.base.model] [INFO] [model.py:1210]  Loading SentenceTransformer model from BAAI/bge-small-zh-v1.5.
+2026-10-29 13:44:05 [sentence_transformers.base.model] [INFO] [model.py:1210]  Loading SentenceTransformer model from BAAI/bge-small-zh-v1.5.
+2026-10-29 13:44:05 [sentence_transformers.base.modules.transformer] [DEBUG] [transformer.py:942]  Active modality config: {'text': {'method': 'forward', 'method_output_name': 'last_hidden_state'}}
+2026-10-29 13:44:05 [sentence_transformers.base.modules.transformer] [DEBUG] [transformer.py:942]  Active modality config: {'text': {'method': 'forward', 'method_output_name': 'last_hidden_state'}}
+2026-10-29 13:44:05 [sentence_transformers.util.file_io] [DEBUG] [file_io.py:221]  Could not load 'config.json' from 'BAAI/bge-small-zh-v1.5': An error happened while trying to locate the file on the Hub and we cannot find the requested files in the local cache. Please check your connection and try again or make sure your Internet connection is on.
+2026-10-29 13:44:05 [sentence_transformers.util.file_io] [DEBUG] [file_io.py:221]  Could not load 'config.json' from 'BAAI/bge-small-zh-v1.5': An error happened while trying to locate the file on the Hub and we cannot find the requested files in the local cache. Please check your connection and try again or make sure your Internet connection is on.
+2026-10-29 13:44:05 [wxbot.vec] [INFO] [vector.py:58]  嵌入模型已加载: BAAI/bge-small-zh-v1.5
+2026-10-29 13:44:05 [wxbot.vec] [INFO] [vector.py:58]  嵌入模型已加载: BAAI/bge-small-zh-v1.5
+2026-10-29 13:44:11 [wxbot.llm] [INFO] [llm.py:91]  模型返回为空，重试一次
+2026-10-29 13:44:20 [wechatauto] [INFO] [guia.py:1458]  已启用 UIA 驱动（混合路径：UIA 优先，OCR 兜底）
+2026-10-29 13:44:22 [wxbot.wechat] [INFO] [wechat.py:127]  → 叶子: （模型返回为空）
+2026-10-29 13:44:22 [wxbot.memory] [DEBUG] [memory.py:84]  记忆已写入 叶子（最近 22 条）

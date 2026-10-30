@@ -78,7 +78,11 @@ def _ask_dsh(cfg: Config, question: str) -> str:
 
 
 def ask(cfg: Config, system: str, question: str) -> str:
-    """返回模型回复文本；空返回重试一次，失败时给简短可发送的说明。"""
+    """返回模型回复文本；空返回重试一次。
+
+    失败/为空一律返回空串并记日志——调用方据此**静默**，不把内部占位文案
+    （如"模型返回为空"）发给客户。
+    """
     try:
         for attempt in range(2):
             if cfg.engine == "dsh":
@@ -87,12 +91,11 @@ def ask(cfg: Config, system: str, question: str) -> str:
                 out = _ask_api(cfg, system, question)
             if out:
                 return out
-            if attempt == 0:
-                log.info("模型返回为空，重试一次")
-        return "（模型返回为空）"
+            log.info("模型返回为空%s", "，重试一次" if attempt == 0 else "")
+        return ""
     except Exception as exc:  # noqa: BLE001
         log.warning("LLM 调用失败: %s", exc)
-        return f"（稍后回复你，刚才接口超时：{exc.__class__.__name__}）"
+        return ""
 
 
 def summarize(cfg: Config, old_lines: list[str]) -> str:

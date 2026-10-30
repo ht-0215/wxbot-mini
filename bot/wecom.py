@@ -115,7 +115,7 @@ class BotService:
         except Exception as exc:  # noqa: BLE001
             self.stats["err"] += 1
             log.warning("生成失败: %s", exc)
-            reply = f"（服务暂时不可用：{exc.__class__.__name__}）"
+            reply = ""            # 静默：不把内部故障文案发给客户，只记日志
         self._cache[inc.userid] = (now, text)
         self.stats["reply"] += 1
         chat_key = inc.name or inc.userid or "wecom"
